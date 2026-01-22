@@ -1,4 +1,5 @@
 use std::convert::TryFrom;
+use crate::dto::UserRow;
 
 #[repr(i32)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -25,4 +26,17 @@ pub struct User {
     pub username: String,
     pub password: String,
     pub role: UserRole,
+}
+
+impl TryFrom<UserRow> for User {
+    type Error = ();
+
+    fn try_from(row: UserRow) -> Result<Self, Self::Error> {
+        Ok(User {
+            id: row.id,
+            username: row.username,
+            password: row.password,
+            role: UserRole::try_from(row.role)?,
+        })
+    }
 }
