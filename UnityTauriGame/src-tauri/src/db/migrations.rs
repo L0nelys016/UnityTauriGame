@@ -42,6 +42,15 @@ pub fn run_migrations(conn: &Connection) {
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
             FOREIGN KEY(game_id) REFERENCES games(id) ON DELETE CASCADE
         );
+
+        -- SEED GENRES
+        INSERT OR IGNORE INTO genres (name) VALUES
+            ('Action packed'),
+            ('Adventures'),
+            ('Strategies'),
+            ('Role-playing games'),
+            ('Races'),
+            ('Simulators');
         "#,
     )
     .expect("Failed to run database migrations");
