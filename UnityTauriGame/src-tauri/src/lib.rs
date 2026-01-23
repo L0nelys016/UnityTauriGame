@@ -1,11 +1,12 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 
-pub mod db;
-pub mod dto;
-pub mod models;
-pub mod commands;
+// DDD Architecture Layers
+pub mod domain;
+pub mod application;
+pub mod infrastructure;
+pub mod presentation;
 
-use db::init_database;
+use infrastructure::sqlite::Database;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
@@ -19,7 +20,7 @@ pub fn run() {
     std::fs::create_dir_all(&data_dir).ok();
     let db_path = data_dir.join("unitytaurigame.db");
     let db_path_str = db_path.to_string_lossy().to_string();
-    let _conn = init_database(&db_path_str);
+    let _db = Database::init(&db_path_str).expect("Failed to initialize database");
     
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
