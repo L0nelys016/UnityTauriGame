@@ -1,4 +1,4 @@
-use super::genre_name::GenreName;
+use super::name::GenreName;
 
 #[derive(Debug, Clone)]
 pub struct Genre {

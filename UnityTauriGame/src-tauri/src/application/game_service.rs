@@ -1,5 +1,8 @@
 use std::sync::Arc;
-use crate::domain::{Game, GameTitle, GameRepository};
+use crate::domain::{
+    abstractions::GameRepository,
+    models::{Game, GameTitle},
+};
 
 pub struct GameService {
     repository: Arc<dyn GameRepository>,

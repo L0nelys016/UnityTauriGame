@@ -1,4 +1,4 @@
-use super::game_title::GameTitle;
+use super::title::GameTitle;
 use super::rating::Rating;
 
 #[derive(Debug, Clone)]

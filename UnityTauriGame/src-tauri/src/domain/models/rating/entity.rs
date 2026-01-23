@@ -1,4 +1,4 @@
-use super::rating_score::RatingScore;
+use super::score::RatingScore;
 
 #[derive(Debug, Clone)]
 pub struct UserRating {

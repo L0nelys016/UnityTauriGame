@@ -1,5 +1,4 @@
-use super::entity::User;
-use super::username::Username;
+use crate::domain::models::{User, Username};
 
 pub trait UserRepository {
     fn save(&self, user: &User) -> Result<(), String>;

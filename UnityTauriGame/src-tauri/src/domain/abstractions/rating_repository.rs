@@ -1,4 +1,4 @@
-use super::entity::UserRating;
+use crate::domain::models::UserRating;
 
 pub trait UserRatingRepository {
     fn save(&self, rating: &UserRating) -> Result<(), String>;

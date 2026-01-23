@@ -1,5 +1,8 @@
 use std::sync::Arc;
-use crate::domain::{UserRating, RatingScore, UserRatingRepository};
+use crate::domain::{
+    abstractions::UserRatingRepository,
+    models::{UserRating, RatingScore},
+};
 
 pub struct RatingService {
     repository: Arc<dyn UserRatingRepository>,

@@ -1,5 +1,4 @@
-use super::entity::Genre;
-use super::genre_name::GenreName;
+use crate::domain::models::{Genre, GenreName};
 
 pub trait GenreRepository {
     fn save(&self, genre: &Genre) -> Result<(), String>;

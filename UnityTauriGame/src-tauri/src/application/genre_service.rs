@@ -1,5 +1,8 @@
 use std::sync::Arc;
-use crate::domain::{Genre, GenreName, GenreRepository};
+use crate::domain::{
+    abstractions::GenreRepository,
+    models::{Genre, GenreName},
+};
 
 pub struct GenreService {
     repository: Arc<dyn GenreRepository>,

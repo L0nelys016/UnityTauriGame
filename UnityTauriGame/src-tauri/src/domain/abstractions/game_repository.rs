@@ -1,5 +1,4 @@
-use super::entity::Game;
-use super::game_title::GameTitle;
+use crate::domain::models::{Game, GameTitle};
 
 pub trait GameRepository {
     fn save(&self, game: &Game) -> Result<(), String>;

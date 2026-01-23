@@ -6,7 +6,7 @@ pub mod application;
 pub mod infrastructure;
 pub mod presentation;
 
-use infrastructure::sqlite::Database;
+use infrastructure::implementation::Database;
 
 #[tauri::command]
 fn greet(name: &str) -> String {

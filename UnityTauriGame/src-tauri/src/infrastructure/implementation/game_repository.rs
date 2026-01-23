@@ -1,6 +1,9 @@
 use std::sync::Arc;
 use rusqlite::{Connection, OptionalExtension};
-use crate::domain::{Game, GameTitle, GameRepository};
+use crate::domain::{
+    abstractions::GameRepository,
+    models::{Game, GameTitle},
+};
 
 pub struct SQLiteGameRepository {
     connection: Arc<Connection>,
