@@ -1,2 +1,6 @@
 node_modules
 dist
+*.db
+*.db-journal
+src-tauri/unitytaurigame.db
+.data/
