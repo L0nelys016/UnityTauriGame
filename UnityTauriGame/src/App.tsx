@@ -1,14 +1,14 @@
-import Main from "./pages/Main";
+import Auth from "./pages/Auth";
 import "./App.css";
 
 function App() {
-  return(
+  return (
     <div class="app">
       <main class="container">
-        <Main />
+        <Auth />
       </main>
     </div>
-  )
+  );
 }
 
 export default App;
