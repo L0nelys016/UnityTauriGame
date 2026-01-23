@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use rusqlite::{Connection, OptionalExtension};
 use crate::domain::{
     abstractions::UserRatingRepository,
@@ -6,18 +6,23 @@ use crate::domain::{
 };
 
 pub struct SQLiteUserRatingRepository {
-    connection: Arc<Connection>,
+    connection: Arc<Mutex<Connection>>,
 }
 
 impl SQLiteUserRatingRepository {
-    pub fn new(connection: Arc<Connection>) -> Self {
+    pub fn new(connection: Arc<Mutex<Connection>>) -> Self {
         SQLiteUserRatingRepository { connection }
     }
 }
 
 impl UserRatingRepository for SQLiteUserRatingRepository {
     fn save(&self, rating: &UserRating) -> Result<(), String> {
-        self.connection
+        let conn = self
+            .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        conn
             .execute(
                 "INSERT OR REPLACE INTO user_ratings (id, user_id, game_id, rating, created_at) 
                  VALUES (?, ?, ?, ?, ?)",
@@ -34,8 +39,12 @@ impl UserRatingRepository for SQLiteUserRatingRepository {
     }
 
     fn find_by_id(&self, id: i64) -> Result<Option<UserRating>, String> {
-        let mut stmt = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare("SELECT id, user_id, game_id, rating, created_at FROM user_ratings WHERE id = ?")
             .map_err(|e| format!("Failed to prepare statement: {}", e))?;
 
@@ -61,8 +70,12 @@ impl UserRatingRepository for SQLiteUserRatingRepository {
     }
 
     fn find_by_user_and_game(&self, user_id: i64, game_id: i64) -> Result<Option<UserRating>, String> {
-        let mut stmt = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare("SELECT id, user_id, game_id, rating, created_at FROM user_ratings WHERE user_id = ? AND game_id = ?")
             .map_err(|e| format!("Failed to prepare statement: {}", e))?;
 
@@ -88,8 +101,12 @@ impl UserRatingRepository for SQLiteUserRatingRepository {
     }
 
     fn find_by_game(&self, game_id: i64) -> Result<Vec<UserRating>, String> {
-        let mut stmt = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare("SELECT id, user_id, game_id, rating, created_at FROM user_ratings WHERE game_id = ? ORDER BY created_at DESC")
             .map_err(|e| format!("Failed to prepare statement: {}", e))?;
 
@@ -116,8 +133,12 @@ impl UserRatingRepository for SQLiteUserRatingRepository {
     }
 
     fn find_by_user(&self, user_id: i64) -> Result<Vec<UserRating>, String> {
-        let mut stmt = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare("SELECT id, user_id, game_id, rating, created_at FROM user_ratings WHERE user_id = ? ORDER BY created_at DESC")
             .map_err(|e| format!("Failed to prepare statement: {}", e))?;
 
@@ -144,8 +165,12 @@ impl UserRatingRepository for SQLiteUserRatingRepository {
     }
 
     fn delete(&self, id: i64) -> Result<(), String> {
-        let rows_affected = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let rows_affected = conn
             .execute("DELETE FROM user_ratings WHERE id = ?", rusqlite::params![id])
             .map_err(|e| format!("Failed to delete rating: {}", e))?;
 
@@ -156,8 +181,12 @@ impl UserRatingRepository for SQLiteUserRatingRepository {
     }
 
     fn delete_by_user_and_game(&self, user_id: i64, game_id: i64) -> Result<(), String> {
-        let rows_affected = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let rows_affected = conn
             .execute(
                 "DELETE FROM user_ratings WHERE user_id = ? AND game_id = ?",
                 rusqlite::params![user_id, game_id],
@@ -171,8 +200,12 @@ impl UserRatingRepository for SQLiteUserRatingRepository {
     }
 
     fn get_average_rating(&self, game_id: i64) -> Result<Option<f64>, String> {
-        let mut stmt = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare("SELECT AVG(rating) FROM user_ratings WHERE game_id = ?")
             .map_err(|e| format!("Failed to prepare statement: {}", e))?;
 
@@ -184,8 +217,12 @@ impl UserRatingRepository for SQLiteUserRatingRepository {
     }
 
     fn get_total_ratings(&self, game_id: i64) -> Result<i64, String> {
-        let mut stmt = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare("SELECT COUNT(*) FROM user_ratings WHERE game_id = ?")
             .map_err(|e| format!("Failed to prepare statement: {}", e))?;
 

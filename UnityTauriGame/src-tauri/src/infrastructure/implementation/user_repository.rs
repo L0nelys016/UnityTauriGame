@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use rusqlite::{Connection, OptionalExtension};
 use crate::domain::{
     abstractions::UserRepository,
@@ -6,18 +6,23 @@ use crate::domain::{
 };
 
 pub struct SQLiteUserRepository {
-    connection: Arc<Connection>,
+    connection: Arc<Mutex<Connection>>,
 }
 
 impl SQLiteUserRepository {
-    pub fn new(connection: Arc<Connection>) -> Self {
+    pub fn new(connection: Arc<Mutex<Connection>>) -> Self {
         SQLiteUserRepository { connection }
     }
 }
 
 impl UserRepository for SQLiteUserRepository {
     fn save(&self, user: &User) -> Result<(), String> {
-        self.connection
+        let conn = self
+            .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        conn
             .execute(
                 "INSERT OR REPLACE INTO users (id, username, password, role) VALUES (?, ?, ?, ?)",
                 rusqlite::params![
@@ -32,8 +37,12 @@ impl UserRepository for SQLiteUserRepository {
     }
 
     fn find_by_id(&self, id: i64) -> Result<Option<User>, String> {
-        let mut stmt = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare("SELECT id, username, password, role FROM users WHERE id = ?")
             .map_err(|e| format!("Failed to prepare statement: {}", e))?;
 
@@ -60,8 +69,12 @@ impl UserRepository for SQLiteUserRepository {
     }
 
     fn find_by_username(&self, username: &Username) -> Result<Option<User>, String> {
-        let mut stmt = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare("SELECT id, username, password, role FROM users WHERE username = ?")
             .map_err(|e| format!("Failed to prepare statement: {}", e))?;
 
@@ -88,8 +101,12 @@ impl UserRepository for SQLiteUserRepository {
     }
 
     fn find_all(&self) -> Result<Vec<User>, String> {
-        let mut stmt = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare("SELECT id, username, password, role FROM users")
             .map_err(|e| format!("Failed to prepare statement: {}", e))?;
 
@@ -117,8 +134,12 @@ impl UserRepository for SQLiteUserRepository {
     }
 
     fn delete(&self, id: i64) -> Result<(), String> {
-        let rows_affected = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let rows_affected = conn
             .execute("DELETE FROM users WHERE id = ?", rusqlite::params![id])
             .map_err(|e| format!("Failed to delete user: {}", e))?;
 
@@ -129,8 +150,12 @@ impl UserRepository for SQLiteUserRepository {
     }
 
     fn exists_by_username(&self, username: &Username) -> Result<bool, String> {
-        let mut stmt = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare("SELECT 1 FROM users WHERE username = ?")
             .map_err(|e| format!("Failed to prepare statement: {}", e))?;
 

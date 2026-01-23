@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use rusqlite::{Connection, OptionalExtension};
 use crate::domain::{
     abstractions::GenreRepository,
@@ -6,18 +6,23 @@ use crate::domain::{
 };
 
 pub struct SQLiteGenreRepository {
-    connection: Arc<Connection>,
+    connection: Arc<Mutex<Connection>>,
 }
 
 impl SQLiteGenreRepository {
-    pub fn new(connection: Arc<Connection>) -> Self {
+    pub fn new(connection: Arc<Mutex<Connection>>) -> Self {
         SQLiteGenreRepository { connection }
     }
 }
 
 impl GenreRepository for SQLiteGenreRepository {
     fn save(&self, genre: &Genre) -> Result<(), String> {
-        self.connection
+        let conn = self
+            .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        conn
             .execute(
                 "INSERT OR REPLACE INTO genres (id, name) VALUES (?, ?)",
                 rusqlite::params![genre.id(), genre.name().as_str()],
@@ -27,8 +32,12 @@ impl GenreRepository for SQLiteGenreRepository {
     }
 
     fn find_by_id(&self, id: i64) -> Result<Option<Genre>, String> {
-        let mut stmt = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare("SELECT id, name FROM genres WHERE id = ?")
             .map_err(|e| format!("Failed to prepare statement: {}", e))?;
 
@@ -48,8 +57,12 @@ impl GenreRepository for SQLiteGenreRepository {
     }
 
     fn find_by_name(&self, name: &GenreName) -> Result<Option<Genre>, String> {
-        let mut stmt = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare("SELECT id, name FROM genres WHERE name = ?")
             .map_err(|e| format!("Failed to prepare statement: {}", e))?;
 
@@ -69,8 +82,12 @@ impl GenreRepository for SQLiteGenreRepository {
     }
 
     fn find_all(&self) -> Result<Vec<Genre>, String> {
-        let mut stmt = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare("SELECT id, name FROM genres ORDER BY name ASC")
             .map_err(|e| format!("Failed to prepare statement: {}", e))?;
 
@@ -91,8 +108,12 @@ impl GenreRepository for SQLiteGenreRepository {
     }
 
     fn delete(&self, id: i64) -> Result<(), String> {
-        let rows_affected = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let rows_affected = conn
             .execute("DELETE FROM genres WHERE id = ?", rusqlite::params![id])
             .map_err(|e| format!("Failed to delete genre: {}", e))?;
 
@@ -103,8 +124,12 @@ impl GenreRepository for SQLiteGenreRepository {
     }
 
     fn count(&self) -> Result<i64, String> {
-        let mut stmt = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare("SELECT COUNT(*) FROM genres")
             .map_err(|e| format!("Failed to prepare statement: {}", e))?;
 

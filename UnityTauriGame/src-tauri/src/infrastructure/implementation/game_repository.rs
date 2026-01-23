@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use rusqlite::{Connection, OptionalExtension};
 use crate::domain::{
     abstractions::GameRepository,
@@ -6,18 +6,23 @@ use crate::domain::{
 };
 
 pub struct SQLiteGameRepository {
-    connection: Arc<Connection>,
+    connection: Arc<Mutex<Connection>>,
 }
 
 impl SQLiteGameRepository {
-    pub fn new(connection: Arc<Connection>) -> Self {
+    pub fn new(connection: Arc<Mutex<Connection>>) -> Self {
         SQLiteGameRepository { connection }
     }
 }
 
 impl GameRepository for SQLiteGameRepository {
     fn save(&self, game: &Game) -> Result<(), String> {
-        self.connection
+        let conn = self
+            .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        conn
             .execute(
                 "INSERT OR REPLACE INTO games (id, title, description, genre_id, release_date, average_rating, total_ratings) 
                  VALUES (?, ?, ?, ?, ?, ?, ?)",
@@ -36,7 +41,12 @@ impl GameRepository for SQLiteGameRepository {
     }
 
     fn find_by_id(&self, id: i64) -> Result<Option<Game>, String> {
-        let mut stmt = self.connection
+        let conn = self
+            .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare(
                 "SELECT g.id, g.title, g.description, g.release_date, g.average_rating, g.total_ratings, g.genre_id
                  FROM games g WHERE g.id = ?"
@@ -69,7 +79,12 @@ impl GameRepository for SQLiteGameRepository {
     }
 
     fn find_by_title(&self, title: &GameTitle) -> Result<Option<Game>, String> {
-        let mut stmt = self.connection
+        let conn = self
+            .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare(
                 "SELECT g.id, g.title, g.description, g.release_date, g.average_rating, g.total_ratings, g.genre_id
                  FROM games g WHERE g.title = ?"
@@ -102,7 +117,12 @@ impl GameRepository for SQLiteGameRepository {
     }
 
     fn find_all(&self) -> Result<Vec<Game>, String> {
-        let mut stmt = self.connection
+        let conn = self
+            .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare(
                 "SELECT g.id, g.title, g.description, g.release_date, g.average_rating, g.total_ratings, g.genre_id
                  FROM games g ORDER BY g.title ASC"
@@ -136,7 +156,12 @@ impl GameRepository for SQLiteGameRepository {
     }
 
     fn find_by_genre(&self, genre_id: i64) -> Result<Vec<Game>, String> {
-        let mut stmt = self.connection
+        let conn = self
+            .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare(
                 "SELECT g.id, g.title, g.description, g.release_date, g.average_rating, g.total_ratings, g.genre_id
                  FROM games g WHERE g.genre_id = ? ORDER BY g.title ASC"
@@ -170,7 +195,12 @@ impl GameRepository for SQLiteGameRepository {
     }
 
     fn find_top_rated(&self, limit: i64) -> Result<Vec<Game>, String> {
-        let mut stmt = self.connection
+        let conn = self
+            .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare(
                 "SELECT g.id, g.title, g.description, g.release_date, g.average_rating, g.total_ratings, g.genre_id
                  FROM games g ORDER BY g.average_rating DESC LIMIT ?"
@@ -204,8 +234,12 @@ impl GameRepository for SQLiteGameRepository {
     }
 
     fn delete(&self, id: i64) -> Result<(), String> {
-        let rows_affected = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let rows_affected = conn
             .execute("DELETE FROM games WHERE id = ?", rusqlite::params![id])
             .map_err(|e| format!("Failed to delete game: {}", e))?;
 
@@ -216,8 +250,12 @@ impl GameRepository for SQLiteGameRepository {
     }
 
     fn count(&self) -> Result<i64, String> {
-        let mut stmt = self
+        let conn = self
             .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let mut stmt = conn
             .prepare("SELECT COUNT(*) FROM games")
             .map_err(|e| format!("Failed to prepare statement: {}", e))?;
 

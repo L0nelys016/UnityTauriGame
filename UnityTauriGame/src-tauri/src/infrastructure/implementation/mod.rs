@@ -9,46 +9,55 @@ pub use game_repository::SQLiteGameRepository;
 pub use rating_repository::SQLiteUserRatingRepository;
 
 use rusqlite::{Connection, Result as SqliteResult};
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 pub struct Database;
 
 impl Database {
-    pub fn init(db_path: &str) -> SqliteResult<Mutex<Connection>> {
+    pub fn init(db_path: &str) -> SqliteResult<Arc<Mutex<Connection>>> {
         let conn = Connection::open(db_path)?;
         
         // Create tables
         conn.execute_batch(
-            "CREATE TABLE IF NOT EXISTS users (
+            r#"
+            PRAGMA foreign_keys = ON;
+
+            CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY,
                 username TEXT NOT NULL UNIQUE,
                 password TEXT NOT NULL,
                 role INTEGER NOT NULL
             );
-            
+
             CREATE TABLE IF NOT EXISTS genres (
                 id INTEGER PRIMARY KEY,
                 name TEXT NOT NULL UNIQUE
             );
-            
+
             CREATE TABLE IF NOT EXISTS games (
                 id INTEGER PRIMARY KEY,
-                title TEXT NOT NULL UNIQUE,
+                title TEXT NOT NULL,
+                description TEXT,
                 genre_id INTEGER NOT NULL,
-                rating REAL NOT NULL DEFAULT 0.0,
-                FOREIGN KEY(genre_id) REFERENCES genres(id)
+                release_date TEXT NOT NULL,
+                average_rating REAL DEFAULT 0,
+                total_ratings INTEGER DEFAULT 0,
+                FOREIGN KEY (genre_id) REFERENCES genres(id)
+                    ON DELETE RESTRICT
+                    ON UPDATE CASCADE
             );
-            
+
             CREATE TABLE IF NOT EXISTS user_ratings (
                 id INTEGER PRIMARY KEY,
                 user_id INTEGER NOT NULL,
                 game_id INTEGER NOT NULL,
-                score INTEGER NOT NULL,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+                created_at TEXT NOT NULL,
                 UNIQUE(user_id, game_id),
-                FOREIGN KEY(user_id) REFERENCES users(id),
-                FOREIGN KEY(game_id) REFERENCES games(id)
-            );",
+                FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY(game_id) REFERENCES games(id) ON DELETE CASCADE
+            );
+            "#,
         )?;
         
         // Insert default genres
@@ -66,6 +75,6 @@ impl Database {
                 (10, 'Indie');",
         )?;
         
-        Ok(Mutex::new(conn))
+        Ok(Arc::new(Mutex::new(conn)))
     }
 }
