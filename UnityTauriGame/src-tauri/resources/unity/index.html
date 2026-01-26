@@ -1,81 +1,226 @@
 <!DOCTYPE html>
 <html lang="en-us">
+
 <head>
+  <script src='https://yandex.ru/games/sdk/v2'></script>
+  <script>
+    let sdk = null;
+    let sdkInitialized = false;
+    let sdkInitCallbacks = [];
+    
+    // Определяем функции до инициализации SDK, чтобы Unity мог вызывать их
+    function showFullScreenAdv() {
+      if (sdkInitialized && sdk) {
+        sdk.adv.showFullscreenAdv({
+          callbacks: {
+            onClose: function (wasShown) {
+              window.unityInstance.SendMessage('YandexSDK', 'OnInterstitialShown');
+            },
+            onError: function (error) {
+              window.unityInstance.SendMessage('YandexSDK', 'OnInterstitialError', error);
+            }
+          }
+        });
+      } else {
+        // Если SDK не инициализирован, просто отправляем сообщение в Unity как будто реклама закрыта
+        if (window.unityInstance) {
+          window.unityInstance.SendMessage('YandexSDK', 'OnInterstitialShown');
+        }
+      }
+    }
+    
+    function showRewardedAdv(placement) {
+      if (sdkInitialized && sdk) {
+        sdk.adv.showRewardedVideo({
+          callbacks: {
+            onOpen: () => {
+              window.unityInstance.SendMessage('YandexSDK', 'OnRewardedOpen', placement);
+            },
+            onRewarded: () => {
+              window.unityInstance.SendMessage('YandexSDK', 'OnRewarded', placement);
+            },
+            onClose: () => {
+              window.unityInstance.SendMessage('YandexSDK', 'OnRewardedClose', placement);
+            },
+            onError: (e) => {
+              window.unityInstance.SendMessage('YandexSDK', 'OnRewardedError', placement);
+            }
+          }
+        });
+      } else {
+        // Если SDK не инициализирован, отправляем сообщения в Unity
+        if (window.unityInstance) {
+          window.unityInstance.SendMessage('YandexSDK', 'OnRewardedOpen', placement);
+          window.unityInstance.SendMessage('YandexSDK', 'OnRewardedClose', placement);
+        }
+      }
+    }
+    
+    function initPlayer() {
+      if (sdkInitialized && sdk) {
+        sdk.getPlayer().then(_player => {
+          player = _player;
+          if (_player.getMode() === 'lite') {
+            window.unityInstance.SendMessage('YandexSDK', 'OnCanReview', "no");
+            window.unityInstance.SendMessage('YandexSDK', 'OnPlayerAuthenticated');
+          }
+          else {
+            sdk.feedback.canReview()
+              .then(({ value, reason }) => {
+                if (value) {
+                  window.unityInstance.SendMessage('YandexSDK', 'OnCanReview', "yes");
+                  window.unityInstance.SendMessage('YandexSDK', 'OnPlayerAuthenticated');
+                } else {
+                  window.unityInstance.SendMessage('YandexSDK', 'OnCanReview', "no");
+                  window.unityInstance.SendMessage('YandexSDK', 'OnPlayerAuthenticated');
+                }
+              })
+          }
+        }).catch(err => {
+          console.error('Error in initPlayer:', err);
+        });
+      } else {
+        // Если SDK не инициализирован, отправляем сообщение об ошибке или стандартные значения
+        if (window.unityInstance) {
+          window.unityInstance.SendMessage('YandexSDK', 'OnCanReview', "no");
+          window.unityInstance.SendMessage('YandexSDK', 'OnPlayerAuthenticated');
+        }
+      }
+    }
+    
+    function setPlayerData(dataStr) {
+      if (sdkInitialized && sdk && player) {
+        player.setData({
+          "data": dataStr
+        }).then(() => {
+          console.log("saved");
+        }).catch(() => {
+          console.log("not saved");
+        });
+      } else {
+        console.log("SDK or player not available for setPlayerData");
+      }
+    }
+    
+    function getPlayerData() {
+      if (sdkInitialized && sdk && player) {
+        player.getData(["data"]).then(data => {
+          if (data.data.length != 0) {
+            var dataStr = data.data;
+            console.log("ok");
+            console.log(dataStr);
+            if (window.unityInstance) {
+              window.unityInstance.SendMessage('YandexSDK', 'OnGetPlayerData', dataStr);
+            }
+          }
+          else {
+            console.log("chota est");
+            var dataStr = 'none';
+            if (window.unityInstance) {
+              window.unityInstance.SendMessage('YandexSDK', 'OnGetPlayerData', dataStr);
+            }
+          }
+        }).catch((err) => {
+          console.log("ne ok");
+          var dataStr = 'none';
+          if (window.unityInstance) {
+            window.unityInstance.SendMessage('YandexSDK', 'OnGetPlayerData', dataStr);
+          }
+        });
+      } else {
+        // Если SDK не инициализирован, отправляем стандартный ответ
+        var dataStr = 'none';
+        if (window.unityInstance) {
+          window.unityInstance.SendMessage('YandexSDK', 'OnGetPlayerData', dataStr);
+        }
+      }
+    }
+    
+    function openRateUs() {
+      if (sdkInitialized && sdk) {
+        sdk.feedback.canReview()
+          .then(({ value, reason }) => {
+            if (value) {
+              sdk.feedback.requestReview()
+                .then(({ feedbackSent }) => {
+                window.focus();
+                  console.log(feedbackSent);
+                })
+            } else {
+              console.log(reason)
+            }
+          })
+          .catch(error => {
+            console.error('Error in openRateUs:', error);
+          });
+      } else {
+        console.log("SDK not available for openRateUs");
+      }
+    }
+    
+    // Инициализируем SDK асинхронно
+    YaGames.init()
+      .then(ysdk => {
+        sdk = ysdk;
+        sdkInitialized = true;
+        
+        // Выполнить все отложенные колбэки
+        sdkInitCallbacks.forEach(callback => callback(sdk));
+        sdkInitCallbacks = [];
+      })
+      .catch(error => {
+        console.error('Yandex SDK initialization failed:', error);
+        // Выполнить все отложенные колбэки даже при ошибке
+        sdkInitCallbacks.forEach(callback => callback(null));
+        sdkInitCallbacks = [];
+      });
+      
+    // Функция для безопасного выполнения кода после инициализации SDK
+    function whenSdkReady(callback) {
+      if (sdkInitialized) {
+        callback(sdk);
+      } else {
+        sdkInitCallbacks.push(callback);
+      }
+    }
+  </script>
+  <script>
+    function showRewardedAdv(placement) {
+      whenSdkReady((currentSdk) => {
+        if (!currentSdk) {
+          console.error('Yandex SDK not available for showRewardedAdv');
+          return;
+        }
+        currentSdk.adv.showRewardedVideo({
+          callbacks: {
+            onOpen: () => {
+              window.unityInstance.SendMessage('YandexSDK', 'OnRewardedOpen', placement);
+            },
+            onRewarded: () => {
+              window.unityInstance.SendMessage('YandexSDK', 'OnRewarded', placement);
+            },
+            onClose: () => {
+              window.unityInstance.SendMessage('YandexSDK', 'OnRewardedClose', placement);
+            },
+            onError: (e) => {
+              window.unityInstance.SendMessage('YandexSDK', 'OnRewardedError', placement);
+            }
+          }
+        });
+      });
+    }
+  </script>
   <meta charset="utf-8">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>Unity WebGL Player | Tests</title>
-
   <link rel="shortcut icon" href="TemplateData/favicon.ico">
   <link rel="stylesheet" href="TemplateData/style.css">
-
-  <!-- ===============================
-       ENV FLAGS
-  =============================== -->
-  <script>
-    const IS_LOCAL =
-      location.hostname === "localhost" ||
-      location.hostname === "127.0.0.1" ||
-      location.protocol === "http:";
-  </script>
-
-  <!-- ===============================
-       Yandex SDK (disabled locally)
-  =============================== -->
-  <script src="sdk.js"></script>
-  <script>
-    let sdkPromise = IS_LOCAL
-      ? Promise.resolve(null)
-      : YaGames.init();
-
-    async function getSdk() {
-      if (IS_LOCAL) {
-        console.warn("Yandex SDK disabled (local)");
-        return null;
-      }
-      if (!window.sdk) {
-        window.sdk = await sdkPromise;
-        console.log("Yandex SDK ready");
-      }
-      return window.sdk;
-    }
-
-    // ===============================
-    // Инициализация игрока
-    // ===============================
-    async function initPlayer() {
-      try {
-        const sdkInstance = await getSdk();
-        if (!sdkInstance) return null;
-
-        const player = await sdkInstance.getPlayer();
-        window.player = player;
-
-        if (player.getMode() === 'lite') {
-          window.unityInstance?.SendMessage('YandexSDK','OnCanReview','no');
-          window.unityInstance?.SendMessage('YandexSDK','OnPlayerAuthenticated');
-        } else {
-          const { value } = await sdkInstance.feedback.canReview();
-          window.unityInstance?.SendMessage('YandexSDK','OnCanReview', value ? "yes":"no");
-          window.unityInstance?.SendMessage('YandexSDK','OnPlayerAuthenticated');
-        }
-        return player;
-      } catch (err) {
-        console.error("initPlayer failed:", err);
-      }
-    }
-  </script>
 </head>
 
-<body style="overflow: hidden; margin: 0">
-
-  <button id="exit-game-btn" type="button"
-    style="position:absolute;top:10px;right:10px;z-index:10;font-size:24px;">
-    ×
-  </button>
-
-  <div id="unity-container" style="width:100%;height:100%">
-    <canvas id="unity-canvas"></canvas>
-
+<body style="overflow: hidden">
+  <button id="exit-game-btn" type="button" title="Выйти из игры">×</button>
+  <div id="unity-container" style="width: 100%; height: 100%">
+    <canvas id="unity-canvas" width=auto height=auto></canvas>
     <div id="unity-loading-bar">
       <div id="unity-logo"></div>
       <div id="unity-progress-bar-empty">
@@ -83,144 +228,127 @@
       </div>
     </div>
   </div>
-
   <script>
-    // ===============================
-    // Exit button
-    // ===============================
-    document.getElementById("exit-game-btn")?.addEventListener("click", () => {
-      try { fetch("/__exit"); } catch {}
-      window.location.href = "/";
-    });
+    // Simple exit button: return back to the app UI.
+    (function () {
+      var btn = document.getElementById("exit-game-btn");
+      if (!btn) return;
 
-    // ===============================
-    // Unity helpers
-    // ===============================
-    let unityReady = false;
+      var params = new URLSearchParams(window.location.search || "");
+      var returnUrl = params.get("return");
 
-    function sendUnityMessageSafe(objectName, methodName, value = "") {
-      if (!unityReady) return;
-      if (!window.unityInstance?.SendMessage) return;
+      btn.addEventListener("click", function () {
+        try { fetch("/__exit").catch(function () { }); } catch (e) { }
+        if (returnUrl) {
+          window.location.href = returnUrl;
+        } else {
+          // Fallback for manual runs in browser.
+          window.location.href = "/";
+        }
+      });
+    })();
 
-      try {
-        window.unityInstance.SendMessage(objectName, methodName, value);
-      } catch (e) {
-        console.warn("SendMessage failed", objectName, methodName, e);
+    var container = document.querySelector("#unity-container");
+    var canvas = document.querySelector("#unity-canvas");
+    var loadingBar = document.querySelector("#unity-loading-bar");
+    var progressBarFull = document.querySelector("#unity-progress-bar-full");
+    var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+    var warningBanner = document.querySelector("#unity-warning");
+
+    // Shows a temporary message banner/ribbon for a few seconds, or
+    // a permanent error message on top of the canvas if type=='error'.
+    // If type=='warning', a yellow highlight color is used.
+    // Modify or remove this function to customize the visually presented
+    // way that non-critical warnings and error messages are presented to the
+    // user.
+    function unityShowBanner(msg, type) {
+      function updateBannerVisibility() {
+        warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
       }
+      var div = document.createElement('div');
+      div.innerHTML = msg;
+      warningBanner.appendChild(div);
+      if (type == 'error') div.style = 'background: red; padding: 10px;';
+      else {
+        if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+        setTimeout(function () {
+          warningBanner.removeChild(div);
+          updateBannerVisibility();
+        }, 5000);
+      }
+      updateBannerVisibility();
     }
 
-    // fallback без перебилда Unity
-    setTimeout(() => {
-      unityReady = true;
-      console.log("Unity assumed ready (timeout)");
-    }, 3000);
-
-    // ===============================
-    // Unity config
-    // ===============================
-    const canvas = document.getElementById("unity-canvas");
-    const loadingBar = document.getElementById("unity-loading-bar");
-    const progressBarFull = document.getElementById("unity-progress-bar-full");
-
-    const buildUrl = "Build";
-    const loaderUrl = buildUrl + "/Breach It.loader.js";
-
-    const config = {
+    var buildUrl = "Build";
+    var loaderUrl = buildUrl + "/Breach It.loader.js";
+    var config = {
       dataUrl: buildUrl + "/Breach It.data.gz",
       frameworkUrl: buildUrl + "/Breach It.framework.js.gz",
-      codeUrl: buildUrl + "/Breach It.wasm.gz",
-      streamingAssetsUrl: "StreamingAssets",
+        codeUrl: buildUrl + "/Breach It.wasm.gz",
+        streamingAssetsUrl: "StreamingAssets",
       companyName: "DefaultCompany",
-      productName: "Tests",
-      productVersion: "1.0",
-    };
+    productName: "Eta shtuka poka ne rabotaet, nu i ladno",
+      productVersion: "etat tozhe",
+        showBanner: unityShowBanner,
+      };
 
-    canvas.style.width = "100%";
-    canvas.style.height = "100%";
+    // Enable fullscreen mode for Unity
+    config.devicePixelRatio = window.devicePixelRatio;
+    
+    // By default Unity keeps WebGL canvas render target size matched with
+    // the DOM size of the canvas element (scaled by window.devicePixelRatio)
+    // Set this to false if you want to decouple this synchronization from
+    // happening inside the engine, and you would instead like to size up
+    // the canvas DOM size and WebGL render target sizes yourself.
+    config.matchWebGLToCanvasSize = true;
+
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      // To lower canvas resolution on mobile devices to gain some
+      // performance, uncomment the following line:
+      // config.devicePixelRatio = 1;
+
+      canvas.style.width = "100vw";
+      canvas.style.height = "100vh";
+    } else {
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+    }
+
     loadingBar.style.display = "block";
 
-    // ===============================
-    // Load Unity
-    // ===============================
-    const script = document.createElement("script");
+    var script = document.createElement("script");
     script.src = loaderUrl;
-
     script.onload = () => {
       createUnityInstance(canvas, config, (progress) => {
-        progressBarFull.style.width = `${progress * 100}%`;
-      })
-      .then((unityInstance) => {
+        progressBarFull.style.width = 100 * progress + "%";
+      }).then((unityInstance) => {
         window.unityInstance = unityInstance;
-        loadingBar.style.display = "none";
-
-        // реклама и SDK — ТОЛЬКО в проде
-        if (!IS_LOCAL) {
-          getSdk().catch(() => {});
+        
+        // Immediately send platform info to Unity, don't wait for SDK
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+          window.unityInstance.SendMessage('YandexSDK', 'OnGetPlayerPlatform', 'phone');
         }
-
-        // платформа
-        const platform = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-          ? "phone"
-          : "desktop";
-        sendUnityMessageSafe("YandexSDK", "OnGetPlayerPlatform", platform);
-      })
-      .catch((err) => {
-        alert("Unity load error: " + err);
+        else {
+          window.unityInstance.SendMessage('YandexSDK', 'OnGetPlayerPlatform', 'desktop');
+        }
+        
+        // Show fullscreen ad after a delay to ensure Unity is ready
+        setTimeout(() => {
+          showFullScreenAdv();
+        }, 2000);
+        
+        loadingBar.style.display = "none";
+      }).catch((message) => {
+        alert(message);
       });
     };
     document.body.appendChild(script);
   </script>
-
-  <!-- ===============================
-       Глобальные функции для Unity
-  =============================== -->
   <script>
-    // auth
-    window.auth = async function() {
-      try {
-        await initPlayer();
-        console.log("Player initialized via auth");
-      } catch (err) {
-        console.error("auth failed:", err);
-      }
-    };
-
-    // show fullscreen ad
-    window.showFullScreenAdv = async function() {
-      try {
-        const sdkInstance = await getSdk();
-        if (sdkInstance) {
-          sdkInstance.adv.showFullscreenAdv({
-            callbacks: {
-              onClose: () => window.unityInstance?.SendMessage("YandexSDK","OnInterstitialShown"),
-              onError: (e) => window.unityInstance?.SendMessage("YandexSDK","OnInterstitialError", e),
-            }
-          });
-          console.log("Fullscreen ad requested");
-        }
-      } catch (err) {
-        console.error("showFullScreenAdv failed:", err);
-      }
-    };
-
-    // show rewarded ad
-    window.showRewardedAdv = async function(placement) {
-      try {
-        const sdkInstance = await getSdk();
-        if (sdkInstance) {
-          sdkInstance.adv.showRewardedVideo({
-            callbacks: {
-              onOpen: () => window.unityInstance?.SendMessage("YandexSDK","OnRewardedOpen", placement),
-              onRewarded: () => window.unityInstance?.SendMessage("YandexSDK","OnRewarded", placement),
-              onClose: () => window.unityInstance?.SendMessage("YandexSDK","OnRewardedClose", placement),
-              onError: (e) => window.unityInstance?.SendMessage("YandexSDK","OnRewardedError", placement),
-            }
-          });
-        }
-      } catch (err) {
-        console.error("showRewardedAdv failed:", err);
-      }
-    };
+    function auth() {
+      initPlayer();
+    }
   </script>
 </body>
+
 </html>
