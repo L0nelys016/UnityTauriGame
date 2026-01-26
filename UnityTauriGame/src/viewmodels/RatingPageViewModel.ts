@@ -12,10 +12,22 @@ export class RatingPageViewModel {
     this.ratingViewModel = new RatingViewModel();
   }
 
-  getRating = () => this.rating();
-  getHover = () => this.hover();
-  getLoading = () => this.loading();
-  getError = () => this.error();
+  getRating = () => {
+    const [rating] = this.rating;
+    return rating();
+  };
+  getHover = () => {
+    const [hover] = this.hover;
+    return hover();
+  };
+  getLoading = () => {
+    const [loading] = this.loading;
+    return loading();
+  };
+  getError = () => {
+    const [error] = this.error;
+    return error();
+  };
 
   setRatingValue = (value: number) => {
     const [, setRating] = this.rating;

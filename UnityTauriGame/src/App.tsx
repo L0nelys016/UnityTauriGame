@@ -2,6 +2,7 @@ import { Show } from "solid-js";
 import Auth from "./pages/Auth";
 import MainAdmin from "./pages/MainAdmin";
 import MainUser from "./pages/MainUser";
+import Navigation from "./components/Navigation";
 import { useAuth } from "./contexts/AuthContext";
 import "./App.css";
 
@@ -14,6 +15,7 @@ function App() {
 
   return (
     <div class="app">
+      <Navigation />
       <main class="container">
         <Show when={!user()} fallback={
           <Show when={user()?.role === 1} fallback={<MainUser />}>

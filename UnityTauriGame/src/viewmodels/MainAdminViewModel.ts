@@ -11,9 +11,18 @@ export class MainAdminViewModel {
     this.gameViewModel = new GameViewModel();
   }
 
-  getGames = () => this.games();
-  getLoading = () => this.loading();
-  getError = () => this.error();
+  getGames = () => {
+    const [games] = this.games;
+    return games();
+  };
+  getLoading = () => {
+    const [loading] = this.loading;
+    return loading();
+  };
+  getError = () => {
+    const [error] = this.error;
+    return error();
+  };
 
   async loadGames() {
     const [, setLoading] = this.loading;

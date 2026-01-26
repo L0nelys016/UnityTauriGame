@@ -16,8 +16,8 @@ export class RatingViewModel {
   ): Promise<Rating> {
     try {
       const rating = await invoke<Rating>("rate_game", {
-        user_id,
-        game_id,
+        userId: user_id,
+        gameId: game_id,
         score,
       });
       return rating;
@@ -28,7 +28,7 @@ export class RatingViewModel {
 
   async getGameRatings(game_id: number): Promise<Rating[]> {
     try {
-      const ratings = await invoke<Rating[]>("get_game_ratings", { game_id });
+      const ratings = await invoke<Rating[]>("get_game_ratings", { gameId: game_id });
       return ratings;
     } catch (error) {
       throw new Error(`Не удалось загрузить оценки игры: ${error}`);
@@ -41,8 +41,8 @@ export class RatingViewModel {
   ): Promise<Rating | null> {
     try {
       const rating = await invoke<Rating | null>("get_user_rating_for_game", {
-        user_id,
-        game_id,
+        userId: user_id,
+        gameId: game_id,
       });
       return rating;
     } catch (error) {
@@ -52,7 +52,7 @@ export class RatingViewModel {
 
   async getAverageRating(game_id: number): Promise<number> {
     try {
-      const rating = await invoke<number>("get_average_rating", { game_id });
+      const rating = await invoke<number>("get_average_rating", { gameId: game_id });
       return rating;
     } catch (error) {
       throw new Error(`Не удалось получить среднюю оценку: ${error}`);

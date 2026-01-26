@@ -15,13 +15,34 @@ export class MainUserViewModel {
     this.gameViewModel = new GameViewModel();
   }
 
-  getGames = () => this.games();
-  getGenres = () => this.genres();
-  getLoading = () => this.loading();
-  getError = () => this.error();
-  getSearch = () => this.search();
-  getFilterGenre = () => this.filterGenre();
-  getSortKey = () => this.sortKey();
+  getGames = () => {
+    const [games] = this.games;
+    return games();
+  };
+  getGenres = () => {
+    const [genres] = this.genres;
+    return genres();
+  };
+  getLoading = () => {
+    const [loading] = this.loading;
+    return loading();
+  };
+  getError = () => {
+    const [error] = this.error;
+    return error();
+  };
+  getSearch = () => {
+    const [search] = this.search;
+    return search();
+  };
+  getFilterGenre = () => {
+    const [filterGenre] = this.filterGenre;
+    return filterGenre();
+  };
+  getSortKey = () => {
+    const [sortKey] = this.sortKey;
+    return sortKey();
+  };
 
   setSearchValue = (value: string) => {
     const [, setSearch] = this.search;
@@ -74,19 +95,25 @@ export class MainUserViewModel {
     const [sortKey] = this.sortKey;
     const [genres] = this.genres;
     
-    return games()
-      .filter((g) => {
-        const matchesSearch = g.title.toLowerCase().includes(search().toLowerCase());
-        const matchesGenre = !filterGenre() || g.genre_id === filterGenre();
+    const gamesValue = games();
+    const searchValue = search();
+    const filterGenreValue = filterGenre();
+    const sortKeyValue = sortKey();
+    const genresValue = genres();
+    
+    return gamesValue
+      .filter((g: Game) => {
+        const matchesSearch = g.title.toLowerCase().includes(searchValue.toLowerCase());
+        const matchesGenre = !filterGenreValue || g.genre_id === filterGenreValue;
         return matchesSearch && matchesGenre;
       })
-      .sort((a, b) => {
-        if (sortKey() === "rating") {
+      .sort((a: Game, b: Game) => {
+        if (sortKeyValue === "rating") {
           return b.average_rating - a.average_rating;
         }
-        if (sortKey() === "genre") {
-          const genreA = genres().find((g) => g.id === a.genre_id)?.name || "";
-          const genreB = genres().find((g) => g.id === b.genre_id)?.name || "";
+        if (sortKeyValue === "genre") {
+          const genreA = genresValue.find((g: Genre) => g.id === a.genre_id)?.name || "";
+          const genreB = genresValue.find((g: Genre) => g.id === b.genre_id)?.name || "";
           return genreA.localeCompare(genreB);
         }
         return a.title.localeCompare(b.title);
@@ -95,7 +122,8 @@ export class MainUserViewModel {
 
   getGenreName(genreId: number): string {
     const [genres] = this.genres;
-    return genres().find((g) => g.id === genreId)?.name || "Неизвестно";
+    const genresValue = genres();
+    return genresValue.find((g: Genre) => g.id === genreId)?.name || "Неизвестно";
   }
 
   async refreshGames() {

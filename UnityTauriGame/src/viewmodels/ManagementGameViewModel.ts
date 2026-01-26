@@ -21,12 +21,30 @@ export class ManagementGameViewModel {
     this.gameViewModel = new GameViewModel();
   }
 
-  getTitle = () => this.title();
-  getDescription = () => this.description();
-  getGenreId = () => this.genreId();
-  getDeveloper = () => this.developer();
-  getLoading = () => this.loading();
-  getError = () => this.error();
+  getTitle = () => {
+    const [title] = this.title;
+    return title();
+  };
+  getDescription = () => {
+    const [description] = this.description;
+    return description();
+  };
+  getGenreId = () => {
+    const [genreId] = this.genreId;
+    return genreId();
+  };
+  getDeveloper = () => {
+    const [developer] = this.developer;
+    return developer();
+  };
+  getLoading = () => {
+    const [loading] = this.loading;
+    return loading();
+  };
+  getError = () => {
+    const [error] = this.error;
+    return error();
+  };
 
   setTitleValue = (value: string) => {
     const [, setTitle] = this.title;

@@ -44,8 +44,8 @@ export class GameViewModel {
       const game = await invoke<Game>("create_game", {
         title,
         description,
-        genre_id,
-        release_date,
+        genreId: genre_id,
+        releaseDate: release_date,
       });
       return game;
     } catch (error) {
@@ -72,7 +72,7 @@ export class GameViewModel {
 
   async getGamesByGenre(genre_id: number): Promise<Game[]> {
     try {
-      const games = await invoke<Game[]>("get_games_by_genre", { genre_id });
+      const games = await invoke<Game[]>("get_games_by_genre", { genreId: genre_id });
       return games;
     } catch (error) {
       throw new Error(`Не удалось загрузить игры по жанру: ${error}`);
