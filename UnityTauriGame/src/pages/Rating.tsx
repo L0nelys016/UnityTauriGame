@@ -1,4 +1,3 @@
-import { Show } from "solid-js";
 import "./Pages.css";
 import { RatingPageViewModel } from "../viewmodels/RatingPageViewModel";
 import { useNotifications } from "../services/NotificationService";
