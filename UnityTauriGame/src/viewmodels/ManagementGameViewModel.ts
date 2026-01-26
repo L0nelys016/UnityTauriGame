@@ -80,7 +80,6 @@ export class ManagementGameViewModel {
       let game: Game;
 
       if (gameId) {
-        // Редактирование существующей игры
         game = await this.gameViewModel.updateGame(
           gameId,
           title,
@@ -89,17 +88,14 @@ export class ManagementGameViewModel {
           releaseDateValue
         );
       } else {
-        // Создание новой игры
-        game = await this.gameViewModel.createGame(
-          title,
-          description || null,
-          genreId,
-          releaseDateValue
-        );
-      }
-
-      // Сброс формы
-      this.reset();
+          game = await this.gameViewModel.createGame(
+            title,
+            description || null,
+            genreId,
+            releaseDateValue
+          );
+          this.reset();
+        }
 
       return game;
     } catch (err) {

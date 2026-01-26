@@ -62,6 +62,21 @@ pub async fn create_game(
 }
 
 #[tauri::command]
+pub async fn update_game(
+    id: i64,
+    title: String,
+    description: Option<String>,
+    genre_id: i64,
+    release_date: String,
+    state: tauri::State<'_, crate::AppState>,
+) -> Result<crate::usecase::game_usecase::GameDto, String> {
+    state
+        .presentation
+        .game_usecase
+        .update_game(id, title, description, genre_id, release_date)
+}
+
+#[tauri::command]
 pub async fn delete_game(
     id: i64,
     state: tauri::State<'_, crate::AppState>,

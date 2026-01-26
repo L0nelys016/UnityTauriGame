@@ -16,10 +16,10 @@ export interface Genre {
 }
 
 export class GameViewModel {
+
   async getAllGames(): Promise<Game[]> {
     try {
-      const games = await invoke<Game[]>("get_all_games");
-      return games;
+      return await invoke<Game[]>("get_all_games");
     } catch (error) {
       throw new Error(`Не удалось загрузить игры: ${error}`);
     }
@@ -27,8 +27,7 @@ export class GameViewModel {
 
   async getGame(id: number): Promise<Game | null> {
     try {
-      const game = await invoke<Game | null>("get_game", { id });
-      return game;
+      return await invoke<Game | null>("get_game", { id });
     } catch (error) {
       throw new Error(`Не удалось загрузить игру: ${error}`);
     }
@@ -41,13 +40,12 @@ export class GameViewModel {
     release_date: string
   ): Promise<Game> {
     try {
-      const game = await invoke<Game>("create_game", {
+      return await invoke<Game>("create_game", {
         title,
         description,
         genreId: genre_id,
         releaseDate: release_date,
       });
-      return game;
     } catch (error) {
       throw new Error(`Не удалось создать игру: ${error}`);
     }
@@ -61,22 +59,13 @@ export class GameViewModel {
     release_date: string
   ): Promise<Game> {
     try {
-      // Получаем существующую игру для сохранения рейтинга
-      const existingGame = await this.getGame(id);
-      
-      // Используем create_game (INSERT OR REPLACE в базе данных)
-      // Но сначала нужно получить текущий id или использовать существующий
-      const game = await invoke<Game>("create_game", {
+      return await invoke<Game>("update_game", {
+        id,
         title,
         description,
         genreId: genre_id,
         releaseDate: release_date,
       });
-      
-      // Если игра была создана с новым id, нужно обновить её с правильным id
-      // Пока что просто возвращаем созданную игру
-      // В будущем нужно добавить отдельную команду update_game в Rust
-      return game;
     } catch (error) {
       throw new Error(`Не удалось обновить игру: ${error}`);
     }
@@ -92,8 +81,7 @@ export class GameViewModel {
 
   async searchGames(query: string): Promise<Game[]> {
     try {
-      const games = await invoke<Game[]>("search_games", { query });
-      return games;
+      return await invoke<Game[]>("search_games", { query });
     } catch (error) {
       throw new Error(`Не удалось выполнить поиск: ${error}`);
     }
@@ -101,8 +89,9 @@ export class GameViewModel {
 
   async getGamesByGenre(genre_id: number): Promise<Game[]> {
     try {
-      const games = await invoke<Game[]>("get_games_by_genre", { genreId: genre_id });
-      return games;
+      return await invoke<Game[]>("get_games_by_genre", {
+        genreId: genre_id,
+      });
     } catch (error) {
       throw new Error(`Не удалось загрузить игры по жанру: ${error}`);
     }
@@ -110,8 +99,7 @@ export class GameViewModel {
 
   async getAllGenres(): Promise<Genre[]> {
     try {
-      const genres = await invoke<Genre[]>("get_all_genres");
-      return genres;
+      return await invoke<Genre[]>("get_all_genres");
     } catch (error) {
       throw new Error(`Не удалось загрузить жанры: ${error}`);
     }

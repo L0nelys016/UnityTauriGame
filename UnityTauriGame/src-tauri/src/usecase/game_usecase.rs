@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use crate::application::{GameService, GenreService, RatingService};
+use crate::domain::models::Game;
 
 pub struct GameUseCase {
     game_service: Arc<GameService>,
@@ -27,13 +28,12 @@ impl GameUseCase {
         genre_id: i64,
         release_date: String,
     ) -> Result<GameDto, String> {
-        // Verify genre exists
+        // Проверяем, существует ли жанр
         self.genre_service
-            .get_genre(genre_id)
-            .map_err(|e| format!("Не удалось проверить жанр: {}", e))?
+            .get_genre(genre_id)?
             .ok_or_else(|| "Жанр не найден".to_string())?;
 
-        // Get next ID (simple approach - in production use proper ID generation)
+        // Генерация ID (простейший вариант)
         let count = self.game_service.count_games()?;
         let new_id = count + 1;
 
@@ -45,6 +45,25 @@ impl GameUseCase {
             release_date,
         )?;
 
+        Ok(self.game_to_dto(&game)?)
+    }
+
+    pub fn update_game(
+        &self,
+        id: i64,
+        title: String,
+        description: Option<String>,
+        genre_id: i64,
+        release_date: String,
+    ) -> Result<GameDto, String> {
+        // Проверяем, существует ли жанр
+        self.genre_service
+            .get_genre(genre_id)?
+            .ok_or_else(|| "Жанр не найден".to_string())?;
+
+        // Обновляем игру через game_service
+        let game = self.game_service.update_game(id, title, description, genre_id, release_date)?;
+        
         Ok(self.game_to_dto(&game)?)
     }
 
@@ -91,7 +110,7 @@ impl GameUseCase {
             .collect())
     }
 
-    fn game_to_dto(&self, game: &crate::domain::models::Game) -> Result<GameDto, String> {
+    fn game_to_dto(&self, game: &Game) -> Result<GameDto, String> {
         let average_rating = self.rating_service
             .get_average_rating(game.id())?
             .unwrap_or(0.0);

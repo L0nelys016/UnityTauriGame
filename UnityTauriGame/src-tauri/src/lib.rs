@@ -73,6 +73,7 @@ pub fn run() {
             presentation::get_all_games,
             presentation::get_game,
             presentation::create_game,
+            presentation::update_game,
             presentation::delete_game,
             presentation::search_games,
             presentation::get_games_by_genre,
