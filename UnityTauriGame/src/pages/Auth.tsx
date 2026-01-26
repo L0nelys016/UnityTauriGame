@@ -54,7 +54,7 @@ export default function Auth({ onLogin }: AuthProps) {
             </label>
           </div>
 
-          <button type="submit" class="auth-submit">
+          <button type="submit" class="btn btn-primary">
             Войти
           </button>
         </form>

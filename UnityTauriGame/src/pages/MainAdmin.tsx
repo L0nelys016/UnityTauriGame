@@ -1,5 +1,6 @@
-import { createSignal, For } from "solid-js";
+import { createSignal, For, Show } from "solid-js";
 import "./Pages.css";
+import ManagementGame from "./ManagementGame";
 
 type Game = {
   id: number;
@@ -9,7 +10,9 @@ type Game = {
   ratingsCount: number;
 };
 
-export default function MainAdmin() {
+const [showOverlay, setShowOverlay] = createSignal(false);
+
+export default function MainAdmin() {  
   const [games, setGames] = createSignal<Game[]>([
     {
       id: 1,
@@ -43,8 +46,16 @@ export default function MainAdmin() {
       <div class="admin-card">
         <div class="admin-header">
           <h1 class="admin-title">Управление играми</h1>
-          <button class="admin-add-button">Добавить игру</button>
+          <button class="btn btn-primary btn--sm" onClick={() => setShowOverlay(true)}>
+            Добавить игру
+          </button>
         </div>
+
+        <Show when={showOverlay()}>
+          <ManagementGame
+            onClose={() => setShowOverlay(false)}
+          />
+        </Show>
 
         <table class="admin-table">
           <thead>
@@ -73,14 +84,14 @@ export default function MainAdmin() {
                   <td>
                     <div class="admin-actions">
                       <button
-                        class="icon-button edit"
+                        class="btn-icon edit"
                         onClick={() => editGame(game.id)}
                         title="Редактировать"
                       >
                         ✏️
                       </button>
                       <button
-                        class="icon-button delete"
+                        class="btn-icon delete"
                         onClick={() => deleteGame(game.id)}
                         title="Удалить"
                       >

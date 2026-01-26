@@ -1,8 +1,9 @@
-/* =========================
-   Общий контейнер страницы
-   ========================= */
+/* =========================================================
+   1. Base layout и фон
+   ========================================================= */
 
-.page {
+.page,
+.auth-root {
   min-height: 100vh;
   width: 100vw;
   display: flex;
@@ -10,35 +11,81 @@
   justify-content: center;
   padding: 24px;
   box-sizing: border-box;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background-image: url("../assets/backgorund.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
-
-/* =========================
-   Экран авторизации
-   ========================= */
 
 .auth-root {
   position: fixed;
   inset: 0;
-  min-height: 100vh;
-  width: 100vw;
-  height: 100vh;
-  display: flex;
+  overflow: hidden;
+}
+
+/* =========================================================
+   2. Buttons и Base UI
+   ========================================================= */
+
+.btn {
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
-  box-sizing: border-box;
-  background-image: url("../assets/backgorund.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  overflow: hidden;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  transition: background 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
 }
+
+.btn-primary {
+  background: #3b82f6;
+  color: #ffffff;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.35);
+}
+.btn-primary:hover { background: #2563eb; }
+.btn-primary:active { transform: translateY(1px); box-shadow: 0 6px 14px rgba(37, 99, 235, 0.4); }
+
+.btn-link {
+  background: none;
+  padding: 0;
+  margin: 0;
+  color: #3b82f6;
+  font: inherit;
+  text-decoration: none;
+  box-shadow: none;
+}
+.btn-link:hover { text-decoration: underline; }
+.btn-link:focus,
+.btn-link:active { outline: none; box-shadow: none; }
+
+.btn--sm { height: 36px; font-size: 13px; }
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  box-shadow: none;
+}
+.btn-icon:hover { background: transparent; }
+.btn-icon:active { transform: translateY(1px); }
+.btn-icon.edit:hover { background: transparent; }
+.btn-icon.delete:hover { background: transparent; }
+
+/* =========================================================
+   3. Auth page
+   ========================================================= */
 
 .auth-background {
   position: absolute;
@@ -92,20 +139,6 @@
   gap: 6px;
 }
 
-.auth-field-row {
-  flex-direction: row;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.auth-field-column {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
 .auth-label {
   font-size: 13px;
   font-weight: 500;
@@ -120,8 +153,6 @@
   font-size: 14px;
   color: #0f172a;
   background-color: #f8fafc;
-  outline: none;
-  box-sizing: border-box;
 }
 
 .auth-input::placeholder {
@@ -155,29 +186,6 @@
   border-radius: 4px;
 }
 
-.auth-submit {
-  margin-top: 4px;
-  height: 44px;
-  border-radius: 8px;
-  border: none;
-  background: #3b82f6;
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
-  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.35);
-}
-
-.auth-submit:hover {
-  background: #2563eb;
-}
-
-.auth-submit:active {
-  transform: translateY(1px);
-  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.4);
-}
-
 .auth-footer-text {
   margin: 16px 0 0;
   text-align: center;
@@ -185,31 +193,9 @@
   color: #6b7280;
 }
 
-.auth-link-button {
-  border: none;
-  padding: 0;
-  margin: 0;
-  background: none;
-  font: inherit;
-  color: #3b82f6;
-  cursor: pointer;
-  text-decoration: none;
-  box-shadow: none;
-}
-
-.auth-link-button:hover {
-  text-decoration: underline;
-}
-
-.auth-link-button:focus,
-.auth-link-button:active {
-  outline: none;
-  box-shadow: none;
-}
-
-/* =========================
-   Админка — управление играми
-   ========================= */
+/* =========================================================
+   4. Admin page
+   ========================================================= */
 
 .admin-card {
   width: 100%;
@@ -236,26 +222,6 @@
   color: #0f172a;
 }
 
-.admin-add-button {
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 8px;
-  border: none;
-  background: #3b82f6;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.35);
-}
-
-.admin-add-button:hover {
-  background: #2563eb;
-}
-
-/* ===== Таблица ===== */
-
 .admin-table {
   width: 100%;
   border-collapse: collapse;
@@ -274,7 +240,10 @@
   color: #0f172a;
 }
 
-/* ===== Рейтинг ===== */
+.admin-actions {
+  display: flex;
+  gap: 8px;
+}
 
 .rating {
   font-size: 14px;
@@ -282,49 +251,143 @@
   letter-spacing: 1px;
 }
 
-/* ===== Действия ===== */
+/* =========================================================
+   5. Overlay / Modal
+   ========================================================= */
 
-.admin-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.icon-button {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  border: none;
-  background: transparent;
-  box-shadow: none;
-  cursor: pointer;
+.overlay-root {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.icon-button:hover {
-  background: transparent;
-  box-shadow: none;
+.overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(2px);
 }
 
-.icon-button:active {
-  transform: translateY(1px);
-  box-shadow: none;
+.overlay-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.35);
 }
 
-.icon-button.edit:hover {
-  background: transparent;
-  box-shadow: none;
+.overlay-title {
+  margin: 0 0 20px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #0f172a;
 }
 
-.icon-button.delete:hover {
-  background: transparent;
-   box-shadow: none;
+.overlay-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-/* =========================
-   Адаптив
-   ========================= */
+.overlay-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.overlay-input,
+.overlay-textarea,
+.overlay-input select {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  padding: 8px 10px;
+  font-size: 14px;
+  color: #0f172a;
+  background: #f8fafc;
+  outline: none;
+}
+
+.overlay-textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.overlay-input:focus,
+.overlay-textarea:focus,
+.overlay-input select:focus {
+  border-color: #3b82f6;
+  background: #ffffff;
+}
+
+/* ---------- Styled select ---------- */
+
+.overlay-input select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #64748b 50%),
+    linear-gradient(135deg, #64748b 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) 55%,
+    calc(100% - 11px) 55%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 32px;
+  cursor: pointer;
+}
+
+.overlay-actions {
+  margin-top: 22px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.overlay-save {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: none;
+  background: #3b82f6;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.overlay-save:hover,
+.overlay-save:focus {
+  background: #2563eb;
+}
+
+.overlay-cancel {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  font-size: 14px;
+  color:black;
+  cursor: pointer;
+}
+
+.overlay-cancel:hover,
+.overlay-cancel:focus {
+  background: white;
+}
+
+/* =========================================================
+   6. Responsive
+   ========================================================= */
 
 @media (max-width: 768px) {
   .auth-card {
