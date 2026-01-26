@@ -9,6 +9,8 @@ pub struct WebglServerState;
 
 #[tauri::command]
 pub fn webgl_start() -> Result<WebglStatus, String> {
+    webgl_stop().ok();
+
     let mut lock = WEBGL_SERVER.lock().unwrap();
     if lock.is_some() {
         return Ok(WebglStatus {

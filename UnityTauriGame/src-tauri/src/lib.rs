@@ -81,6 +81,7 @@ pub fn run() {
     };
 
     // ===== 8. Tauri Builder =====
+    webgl_server::webgl_stop().ok();
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .manage(app_state)
