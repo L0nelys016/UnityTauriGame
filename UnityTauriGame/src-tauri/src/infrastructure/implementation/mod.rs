@@ -62,7 +62,8 @@ impl Database {
         
         // Insert default genres
         conn.execute_batch(
-            "INSERT OR IGNORE INTO genres (id, name) VALUES
+            r#"
+            INSERT OR IGNORE INTO genres (id, name) VALUES
                 (1, 'Action'),
                 (2, 'RPG'),
                 (3, 'Strategy'),
@@ -72,7 +73,12 @@ impl Database {
                 (7, 'Shooter'),
                 (8, 'Racing'),
                 (9, 'Simulation'),
-                (10, 'Indie');",
+                (10, 'Indie');
+
+            INSERT OR IGNORE INTO users(id, username, password, role) VALUES
+                (1, 'admin', 'admin', 1),
+                (2, 'user', 'user', 0);
+            "#
         )?;
         
         Ok(Arc::new(Mutex::new(conn)))
