@@ -7,7 +7,11 @@ import { useAuth } from "../contexts/AuthContext";
 import { useNotifications } from "../services/NotificationService";
 import { webglApi, type WebglStatus } from "../webgl.api";
 
-export default function UserPage() {
+type Props = {
+  onGameLaunch?: (game: Game) => void;
+};
+
+export default function UserPage(props: Props) {
   const viewModel = new MainUserViewModel();
   const [selectedGame, setSelectedGame] = createSignal<Game | null>(null);
   const [showRating, setShowRating] = createSignal(false);
@@ -47,19 +51,13 @@ export default function UserPage() {
 
   const handleRatingSkip = () => setShowRating(false);
 
-  const handleLaunch = async (game: Game) => {
+  const handleLaunch = (game: Game) => {
     setIsGameBusy(true);
     setGameError(null);
     try {
-      // используем webglApi
-      const status: WebglStatus = await webglApi.start();
-
-      if (!status.running || !status.url) {
-        throw new Error("Не удалось запустить WebGL сервер");
+      if (props.onGameLaunch) {
+        props.onGameLaunch(game);
       }
-
-      setWebglUrl(status.url);
-      setLaunchGame(game);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setGameError(msg);
@@ -190,28 +188,7 @@ export default function UserPage() {
         />
       </Show>
 
-      {/* Оверлей для WebGL */}
-      <Show when={launchGame() && webglUrl()}>
-        <div class="game-launch-overlay">
-          <div class="overlay-header">
-            <h2>{launchGame()!.title}</h2>
-            <button class="btn-close" onClick={() => setLaunchGame(null)}>
-              ✖
-            </button>
-          </div>
-          <iframe
-            src={webglUrl()}
-            style={{
-              width: "1024px",
-              height: "768px",
-              border: "none",
-              "background-color": "#000",
-            }}
-            allowfullscreen
-          />
-          {gameError() && <p class="game-error">{gameError()}</p>}
-        </div>
-      </Show>
+      {/* Оверлей для WebGL теперь находится в App.tsx */}
     </div>
   );
 }

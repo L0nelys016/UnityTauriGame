@@ -5,7 +5,11 @@ import { MainAdminViewModel } from "../viewmodels/MainAdminViewModel";
 import { GameViewModel, Game } from "../viewmodels/GameViewModel";
 import { useNotifications } from "../services/NotificationService";
 
-export default function MainAdmin() {
+type Props = {
+  onGameLaunch?: (game: Game) => void;
+};
+
+export default function MainAdmin(props: Props) {
   const viewModel = new MainAdminViewModel();
   const gameViewModel = new GameViewModel();
   const [genres, setGenres] = createSignal<Array<{ id: number; name: string }>>([]);
