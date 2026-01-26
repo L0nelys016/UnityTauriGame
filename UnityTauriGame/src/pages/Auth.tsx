@@ -1,6 +1,15 @@
 import "./Pages.css";
 
-export default function Auth() {
+interface AuthProps {
+  onLogin: () => void;
+}
+
+export default function Auth({ onLogin }: AuthProps) {
+  const handleSubmit = (e: SubmitEvent) => {
+    e.preventDefault();
+    onLogin();
+  };
+
   return (
     <div class="auth-root">
       <div class="auth-background" />
@@ -13,7 +22,7 @@ export default function Auth() {
           </p>
         </div>
 
-        <form class="auth-form">
+        <form class="auth-form" onSubmit={handleSubmit}>
           <div class="auth-field">
             <label class="auth-label" for="email">
               Логин:
