@@ -218,7 +218,6 @@
 </head>
 
 <body style="overflow: hidden">
-  <button id="exit-game-btn" type="button" title="Выйти из игры">×</button>
   <div id="unity-container" style="width: 100%; height: 100%">
     <canvas id="unity-canvas" width=auto height=auto></canvas>
     <div id="unity-loading-bar">
@@ -229,25 +228,6 @@
     </div>
   </div>
   <script>
-    // Simple exit button: return back to the app UI.
-    (function () {
-      var btn = document.getElementById("exit-game-btn");
-      if (!btn) return;
-
-      var params = new URLSearchParams(window.location.search || "");
-      var returnUrl = params.get("return");
-
-      btn.addEventListener("click", function () {
-        try { fetch("/__exit").catch(function () { }); } catch (e) { }
-        if (returnUrl) {
-          window.location.href = returnUrl;
-        } else {
-          // Fallback for manual runs in browser.
-          window.location.href = "/";
-        }
-      });
-    })();
-
     var container = document.querySelector("#unity-container");
     var canvas = document.querySelector("#unity-canvas");
     var loadingBar = document.querySelector("#unity-loading-bar");
