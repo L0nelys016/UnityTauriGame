@@ -2,10 +2,11 @@ import { createSignal, For, Show, onMount } from "solid-js";
 import "./Pages.css";
 import ManagementGame from "./ManagementGame";
 import { MainAdminViewModel } from "../viewmodels/MainAdminViewModel";
-import { GameViewModel } from "../viewmodels/GameViewModel";
+import { GameViewModel, Game } from "../viewmodels/GameViewModel";
 import { useNotifications } from "../services/NotificationService";
 
 const [showOverlay, setShowOverlay] = createSignal(false);
+const [editingGame, setEditingGame] = createSignal<Game | null>(null);
 
 export default function MainAdmin() {
   const viewModel = new MainAdminViewModel();
@@ -32,19 +33,40 @@ export default function MainAdmin() {
     }
   };
 
-  const editGame = (id: number) => {
-    console.log("Редактировать игру с id:", id);
-    // тут позже будет роутинг или модалка
+  const editGame = async (id: number) => {
+    try {
+      const game = await gameViewModel.getGame(id);
+      if (game) {
+        setEditingGame(game);
+        setShowOverlay(true);
+      } else {
+        showError("Игра не найдена");
+      }
+    } catch (err) {
+      showError("Не удалось загрузить игру для редактирования");
+    }
   };
 
   const handleGameSaved = async () => {
     try {
       await viewModel.refreshGames();
-      success("Игра успешно добавлена");
+      const isEdit = editingGame() !== null;
+      success(isEdit ? "Игра успешно обновлена" : "Игра успешно добавлена");
       setShowOverlay(false);
+      setEditingGame(null);
     } catch (err) {
       showError("Не удалось обновить список игр");
     }
+  };
+
+  const handleAddGame = () => {
+    setEditingGame(null);
+    setShowOverlay(true);
+  };
+
+  const handleClose = () => {
+    setShowOverlay(false);
+    setEditingGame(null);
   };
 
   const getGenreName = (genreId: number): string => {
@@ -58,14 +80,15 @@ export default function MainAdmin() {
       <div class="admin-card">
         <div class="admin-header">
           <h1 class="admin-title">Управление играми</h1>
-          <button class="btn btn-primary btn--sm" onClick={() => setShowOverlay(true)}>
+          <button class="btn btn-primary btn--sm" onClick={handleAddGame}>
             ➕ Добавить игру
           </button>
         </div>
 
         <Show when={showOverlay()}>
           <ManagementGame
-            onClose={() => setShowOverlay(false)}
+            game={editingGame()}
+            onClose={handleClose}
             onSave={handleGameSaved}
           />
         </Show>
