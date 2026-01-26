@@ -9,23 +9,23 @@ export default function Auth() {
         <div class="auth-card-header">
           <h1 class="auth-title">Вход в аккаунт</h1>
           <p class="auth-subtitle">
-            Пожалуйста, введите адрес электронной почты и пароль для продолжения
+            Пожалуйста, введите логин и пароль для продолжения
           </p>
         </div>
 
         <form class="auth-form">
           <div class="auth-field">
             <label class="auth-label" for="email">
-              Адрес электронной почты:
+              Логин:
             </label>
             <input
-              id="email"
-              type="email"
+              id="login"
+              type="login"
               class="auth-input"
-              placeholder="unitytaurigame@gmail.com"
+              placeholder="unitytaurigame"
             />
           </div>
-
+    
           <div class="auth-field">
             <label class="auth-label" for="password">
               Пароль
@@ -48,13 +48,6 @@ export default function Auth() {
           <button type="submit" class="auth-submit">
             Войти
           </button>
-
-          <p class="auth-footer-text">
-            Нет аккаунта?{" "}
-            <button type="button" class="auth-link-button">
-              Создать аккаунт
-            </button>
-          </p>
         </form>
       </div>
     </div>
