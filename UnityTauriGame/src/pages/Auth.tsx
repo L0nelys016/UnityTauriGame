@@ -1,13 +1,32 @@
+import { createSignal } from "solid-js";
 import "./Pages.css";
+import { AuthViewModel } from "../viewmodels/AuthViewModel";
+import { useNotifications } from "../services/NotificationService";
 
 interface AuthProps {
-  onLogin: () => void;
+  onLogin: (user: { id: number; username: string; role: number }) => void;
 }
 
 export default function Auth({ onLogin }: AuthProps) {
-  const handleSubmit = (e: SubmitEvent) => {
+  const [username, setUsername] = createSignal("");
+  const [password, setPassword] = createSignal("");
+  const [loading, setLoading] = createSignal(false);
+  const authViewModel = new AuthViewModel();
+  const { success, error: showError } = useNotifications();
+
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
-    onLogin();
+    setLoading(true);
+
+    try {
+      const user = await authViewModel.login(username(), password());
+      success(`Добро пожаловать, ${user.username}!`);
+      onLogin(user);
+    } catch (err) {
+      showError(err instanceof Error ? err.message : "Ошибка входа");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -24,14 +43,17 @@ export default function Auth({ onLogin }: AuthProps) {
 
         <form class="auth-form" onSubmit={handleSubmit}>
           <div class="auth-field">
-            <label class="auth-label" for="email">
+            <label class="auth-label" for="login">
               Логин:
             </label>
             <input
               id="login"
-              type="login"
+              type="text"
               class="auth-input"
               placeholder="unitytaurigame"
+              value={username()}
+              onInput={(e) => setUsername(e.currentTarget.value)}
+              disabled={loading()}
             />
           </div>
     
@@ -44,6 +66,9 @@ export default function Auth({ onLogin }: AuthProps) {
               type="password"
               class="auth-input"
               placeholder="• • • • • • • •"
+              value={password()}
+              onInput={(e) => setPassword(e.currentTarget.value)}
+              disabled={loading()}
             />
           </div>
 
@@ -54,8 +79,8 @@ export default function Auth({ onLogin }: AuthProps) {
             </label>
           </div>
 
-          <button type="submit" class="btn btn-primary">
-            Войти
+          <button type="submit" class="btn btn-primary" disabled={loading()}>
+            {loading() ? "Вход..." : "Войти"}
           </button>
         </form>
       </div>

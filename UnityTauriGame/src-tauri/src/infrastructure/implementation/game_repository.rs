@@ -244,7 +244,7 @@ impl GameRepository for SQLiteGameRepository {
             .map_err(|e| format!("Failed to delete game: {}", e))?;
 
         if rows_affected == 0 {
-            return Err("Game not found".to_string());
+            return Err("Игра не найдена".to_string());
         }
         Ok(())
     }

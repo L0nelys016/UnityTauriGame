@@ -175,7 +175,7 @@ impl UserRatingRepository for SQLiteUserRatingRepository {
             .map_err(|e| format!("Failed to delete rating: {}", e))?;
 
         if rows_affected == 0 {
-            return Err("Rating not found".to_string());
+            return Err("Оценка не найдена".to_string());
         }
         Ok(())
     }
@@ -194,7 +194,7 @@ impl UserRatingRepository for SQLiteUserRatingRepository {
             .map_err(|e| format!("Failed to delete rating: {}", e))?;
 
         if rows_affected == 0 {
-            return Err("Rating not found".to_string());
+            return Err("Оценка не найдена".to_string());
         }
         Ok(())
     }

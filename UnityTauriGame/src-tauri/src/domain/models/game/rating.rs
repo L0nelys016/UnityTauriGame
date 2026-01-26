@@ -4,7 +4,7 @@ pub struct Rating(f64);
 impl Rating {
     pub fn new(value: f64) -> Result<Self, String> {
         if value < 0.0 || value > 5.0 {
-            return Err("Rating must be between 0 and 5".to_string());
+            return Err("Рейтинг должен быть от 0 до 5".to_string());
         }
         Ok(Rating(value))
     }

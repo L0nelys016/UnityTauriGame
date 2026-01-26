@@ -1,36 +1,40 @@
-import { createSignal } from "solid-js";
+import { createSignal, onMount, For } from "solid-js";
 import "./Pages.css";
+import { ManagementGameViewModel } from "../viewmodels/ManagementGameViewModel";
+import { GameViewModel } from "../viewmodels/GameViewModel";
+import { useNotifications } from "../services/NotificationService";
 
 type Props = {
   onClose: () => void;
-  onSave?: (game: {
-    title: string;
-    description: string;
-    genre: string;
-    developer: string;
-  }) => void;
+  onSave?: () => void;
 };
 
 export default function ManagementGame(props: Props) {
-  const [title, setTitle] = createSignal("");
-  const [description, setDescription] = createSignal("");
-  const [genre, setGenre] = createSignal("RPG");
-  const [developer, setDeveloper] = createSignal("");
+  const viewModel = new ManagementGameViewModel();
+  const gameViewModel = new GameViewModel();
+  const [genres, setGenres] = createSignal<Array<{ id: number; name: string }>>([]);
+  const { error: showError } = useNotifications();
 
-  const save = () => {
-    if (!title().trim()) {
-      alert("Название обязательно");
-      return;
+  onMount(async () => {
+    try {
+      const loadedGenres = await gameViewModel.getAllGenres();
+      setGenres(loadedGenres);
+    } catch (err) {
+      showError("Не удалось загрузить жанры");
     }
+  });
 
-    props.onSave?.({
-      title: title(),
-      description: description(),
-      genre: genre(),
-      developer: developer(),
-    });
-
-    props.onClose();
+  const save = async () => {
+    const game = await viewModel.save();
+    if (game) {
+      props.onSave?.();
+      props.onClose();
+    } else {
+      const error = viewModel.getError();
+      if (error) {
+        showError(error);
+      }
+    }
   };
 
   return (
@@ -45,8 +49,9 @@ export default function ManagementGame(props: Props) {
             <span>Название *</span>
             <input
               class="overlay-input"
-              value={title()}
-              onInput={(e) => setTitle(e.currentTarget.value)}
+              value={viewModel.getTitle()}
+              onInput={(e) => viewModel.setTitleValue(e.currentTarget.value)}
+              disabled={viewModel.getLoading()}
             />
           </label>
 
@@ -54,40 +59,45 @@ export default function ManagementGame(props: Props) {
             <span>Описание</span>
             <textarea
               class="overlay-textarea"
-              value={description()}
-              onInput={(e) => setDescription(e.currentTarget.value)}
+              value={viewModel.getDescription()}
+              onInput={(e) => viewModel.setDescriptionValue(e.currentTarget.value)}
+              disabled={viewModel.getLoading()}
             />
           </label>
 
           <label class="overlay-field">
-            <span>Жанр</span>
+            <span>Жанр *</span>
             <select
               class="overlay-input"
-              value={genre()}
-              onChange={(e) => setGenre(e.currentTarget.value)}
+              value={viewModel.getGenreId() || ""}
+              onChange={(e) => viewModel.setGenreIdValue(
+                e.currentTarget.value ? parseInt(e.currentTarget.value) : null
+              )}
+              disabled={viewModel.getLoading()}
             >
-              <option value="RPG">RPG</option>
-              <option value="Action">Action</option>
-              <option value="Strategy">Strategy</option>
-              <option value="Simulator">Simulator</option>
+              <option value="">Выберите жанр</option>
+              <For each={genres()}>
+                {(genre) => (
+                  <option value={genre.id}>{genre.name}</option>
+                )}
+              </For>
             </select>
-          </label>
-
-          <label class="overlay-field">
-            <span>Разработчик</span>
-            <input
-              class="overlay-input"
-              value={developer()}
-              onInput={(e) => setDeveloper(e.currentTarget.value)}
-            />
           </label>
         </div>
 
         <div class="overlay-actions">
-          <button class="overlay-save" onClick={save}>
-            Сохранить
+          <button 
+            class="overlay-save" 
+            onClick={save}
+            disabled={viewModel.getLoading()}
+          >
+            {viewModel.getLoading() ? "Сохранение..." : "Сохранить"}
           </button>
-          <button class="overlay-cancel" onClick={props.onClose}>
+          <button 
+            class="overlay-cancel" 
+            onClick={props.onClose}
+            disabled={viewModel.getLoading()}
+          >
             Отмена
           </button>
         </div>

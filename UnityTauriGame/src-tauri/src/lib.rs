@@ -5,6 +5,7 @@ pub mod domain;
 pub mod application;
 pub mod infrastructure;
 pub mod presentation;
+pub mod usecase;
 
 use std::sync::Arc;
 
@@ -18,15 +19,12 @@ use crate::infrastructure::implementation::{
     SQLiteUserRepository,
 };
 use crate::presentation::PresentationLayer;
+use crate::usecase::{AuthUseCase, GameUseCase, RatingUseCase, GenreUseCase};
 
 pub struct AppState {
     pub presentation: PresentationLayer,
 }
 
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -49,13 +47,41 @@ pub fn run() {
     let game_service = Arc::new(GameService::new(game_repo));
     let rating_service = Arc::new(RatingService::new(rating_repo));
 
-    let presentation = PresentationLayer::new(user_service, genre_service, game_service, rating_service);
+    // Create use cases
+    let auth_usecase = Arc::new(AuthUseCase::new(user_service.clone()));
+    let genre_usecase = Arc::new(GenreUseCase::new(genre_service.clone()));
+    let game_usecase = Arc::new(GameUseCase::new(
+        game_service.clone(),
+        genre_service.clone(),
+        rating_service.clone(),
+    ));
+    let rating_usecase = Arc::new(RatingUseCase::new(rating_service.clone()));
+
+    let presentation = PresentationLayer::new(
+        auth_usecase,
+        genre_usecase,
+        game_usecase,
+        rating_usecase,
+    );
     let app_state = AppState { presentation };
     
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .manage(app_state)
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![
+            presentation::login,
+            presentation::get_all_games,
+            presentation::get_game,
+            presentation::create_game,
+            presentation::delete_game,
+            presentation::search_games,
+            presentation::get_games_by_genre,
+            presentation::get_all_genres,
+            presentation::rate_game,
+            presentation::get_game_ratings,
+            presentation::get_user_rating_for_game,
+            presentation::get_average_rating,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
