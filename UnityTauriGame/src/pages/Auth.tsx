@@ -10,6 +10,7 @@ interface AuthProps {
 export default function Auth({ onLogin }: AuthProps) {
   const [username, setUsername] = createSignal("");
   const [password, setPassword] = createSignal("");
+  const [showPassword, setShowPassword] = createSignal(false);
   const [loading, setLoading] = createSignal(false);
   const authViewModel = new AuthViewModel();
   const { success, error: showError } = useNotifications();
@@ -61,15 +62,27 @@ export default function Auth({ onLogin }: AuthProps) {
             <label class="auth-label" for="password">
               Пароль
             </label>
-            <input
-              id="password"
-              type="password"
-              class="auth-input"
-              placeholder="• • • • • • • •"
-              value={password()}
-              onInput={(e) => setPassword(e.currentTarget.value)}
-              disabled={loading()}
-            />
+            <div class="auth-input-wrapper">
+              <input
+                id="password"
+                type={showPassword() ? "text" : "password"}
+                class="auth-input"
+                placeholder="• • • • • • • •"
+                value={password()}
+                onInput={(e) => setPassword(e.currentTarget.value)}
+                disabled={loading()}
+              />
+              <button
+                type="button"
+                class={`auth-password-toggle ${showPassword() ? 'visible' : ''}`}
+                onClick={() => setShowPassword(!showPassword())}
+                disabled={loading()}
+                tabIndex={-1}
+                title={showPassword() ? "Скрыть пароль" : "Показать пароль"}
+              >
+                <span class="eye-icon">{showPassword() ? '👁️' : '👁️‍🗨️'}</span>
+              </button>
+            </div>
           </div>
 
           <div class="auth-remember-row">

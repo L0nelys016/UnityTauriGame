@@ -49,6 +49,8 @@ export default function UserPage() {
 
   return (
     <div class="user-page">
+      <div class="auth-background" />
+      
       <div class="page-header">
         <h1>🎮 Каталог игр</h1>
         <p class="page-subtitle">Выберите игру из каталога и оцените её</p>

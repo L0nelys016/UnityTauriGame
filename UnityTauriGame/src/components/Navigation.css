@@ -1,9 +1,10 @@
 .navigation {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
   position: sticky;
   top: 0;
   z-index: 1000;
+  backdrop-filter: blur(10px);
 }
 
 .nav-container {
@@ -32,25 +33,27 @@
 }
 
 .nav-link {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.95);
   text-decoration: none;
   padding: 0.5rem 1rem;
-  border-radius: 6px;
+  border-radius: 8px;
   transition: all 0.3s ease;
-  font-weight: 500;
+  font-weight: 600;
   display: inline-block;
   cursor: default;
+  font-size: 14px;
 }
 
 .nav-link:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   color: white;
 }
 
 .nav-link.active {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
   color: white;
   cursor: default;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .nav-user {
@@ -74,25 +77,27 @@
   font-size: 0.75rem;
   font-weight: 600;
   backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.nav-logout {
-  background: rgba(255, 255, 255, 0.2);
+/* Navigation specific button overrides */
+.navigation .btn-primary {
+  background: rgba(255, 255, 255, 0.25);
   color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s ease;
   backdrop-filter: blur(10px);
 }
 
-.nav-logout:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.5);
+.navigation .btn-primary:hover {
+  background: rgba(255, 255, 255, 0.35);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
-.nav-logout:active {
+.navigation .btn-primary:active {
   background: rgba(255, 255, 255, 0.4);
+  transform: translateY(1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }

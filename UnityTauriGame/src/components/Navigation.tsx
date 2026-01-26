@@ -39,7 +39,7 @@ export default function Navigation() {
               👤 {user()?.username}
               {isAdmin() && <span class="nav-badge">Админ</span>}
             </span>
-            <button class="nav-logout" onClick={handleLogout}>
+            <button class="btn btn-primary btn--sm" onClick={handleLogout}>
               Выйти
             </button>
           </div>

@@ -53,6 +53,8 @@ export default function MainAdmin() {
 
   return (
     <div class="user-page">
+      <div class="auth-background" />
+      
       <div class="admin-card">
         <div class="admin-header">
           <h1 class="admin-title">Управление играми</h1>
