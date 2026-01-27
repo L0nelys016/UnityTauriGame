@@ -80,7 +80,7 @@ export default function Auth({ onLogin }: AuthProps) {
                 tabIndex={-1}
                 title={showPassword() ? "Скрыть пароль" : "Показать пароль"}
               >
-                <span class="eye-icon">{showPassword() ? '👁️' : '⌣'}</span>
+                <span class="eye-icon">{showPassword() ? '👀' : '⌣'}</span>
               </button>
             </div>
           </div>

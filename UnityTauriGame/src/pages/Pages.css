@@ -194,8 +194,8 @@
 .auth-password-toggle {
   position: absolute;
   right: 8px;
-  background: none;
-  border: none;
+  background: transparent !important;
+  border: none !important;
   cursor: pointer;
   padding: 8px;
   display: flex;
@@ -208,12 +208,15 @@
   opacity: 0.7;
   width: 32px;
   height: 32px;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 .auth-password-toggle:hover {
   color: #3b82f6;
-  background-color: rgba(59, 130, 246, 0.1);
+  background: transparent !important;
   opacity: 1;
+  box-shadow: none !important;
 }
 
 .auth-password-toggle.visible {
@@ -227,11 +230,14 @@
 
 .auth-password-toggle:active {
   transform: scale(0.9);
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .auth-password-toggle:disabled {
   opacity: 0.3;
   cursor: not-allowed;
+  background: transparent !important;
 }
 
 .eye-icon {
@@ -239,12 +245,17 @@
   transition: transform 0.2s ease;
   font-size: 20px;
   line-height: 1;
-  background-color: transparent;
-  box-shadow: none;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  outline: none !important;
 }
 
 .auth-password-toggle:hover .eye-icon {
   transform: scale(1.1);
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 
 .auth-remember-row {
