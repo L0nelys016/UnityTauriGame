@@ -1,6 +1,6 @@
 use crate::domain::models::{Genre, GenreName};
 
-pub trait GenreRepository {
+pub trait GenreRepository: Send + Sync {
     fn save(&self, genre: &Genre) -> Result<(), String>;
     fn find_by_id(&self, id: i64) -> Result<Option<Genre>, String>;
     fn find_by_name(&self, name: &GenreName) -> Result<Option<Genre>, String>;

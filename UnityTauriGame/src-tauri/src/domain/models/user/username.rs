@@ -4,13 +4,13 @@ pub struct Username(String);
 impl Username {
     pub fn new(value: String) -> Result<Self, String> {
         if value.is_empty() {
-            return Err("Username cannot be empty".to_string());
+            return Err("Имя пользователя не может быть пустым".to_string());
         }
         if value.len() < 3 {
-            return Err("Username must be at least 3 characters".to_string());
+            return Err("Имя пользователя должно содержать минимум 3 символа".to_string());
         }
         if value.len() > 50 {
-            return Err("Username must not exceed 50 characters".to_string());
+            return Err("Имя пользователя не должно превышать 50 символов".to_string());
         }
         Ok(Username(value))
     }

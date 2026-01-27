@@ -25,7 +25,7 @@ impl UserService {
 
         // Check if user already exists
         if self.repository.exists_by_username(&username)? {
-            return Err("Username already exists".to_string());
+            return Err("Пользователь с таким именем уже существует".to_string());
         }
 
         let user = User::new(id, username, password, role);

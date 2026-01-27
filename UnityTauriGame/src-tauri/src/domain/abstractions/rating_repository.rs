@@ -1,6 +1,6 @@
 use crate::domain::models::UserRating;
 
-pub trait UserRatingRepository {
+pub trait UserRatingRepository: Send + Sync {
     fn save(&self, rating: &UserRating) -> Result<(), String>;
     fn find_by_id(&self, id: i64) -> Result<Option<UserRating>, String>;
     fn find_by_user_and_game(&self, user_id: i64, game_id: i64) -> Result<Option<UserRating>, String>;

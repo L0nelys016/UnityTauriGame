@@ -1,6 +1,6 @@
 use crate::domain::models::{User, Username};
 
-pub trait UserRepository {
+pub trait UserRepository: Send + Sync {
     fn save(&self, user: &User) -> Result<(), String>;
     fn find_by_id(&self, id: i64) -> Result<Option<User>, String>;
     fn find_by_username(&self, username: &Username) -> Result<Option<User>, String>;

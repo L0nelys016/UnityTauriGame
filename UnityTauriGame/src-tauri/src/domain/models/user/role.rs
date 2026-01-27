@@ -10,7 +10,7 @@ impl UserRole {
         match value {
             0 => Ok(UserRole::User),
             1 => Ok(UserRole::Admin),
-            _ => Err(format!("Invalid role value: {}", value)),
+            _ => Err(format!("Неверное значение роли: {}", value)),
         }
     }
 
