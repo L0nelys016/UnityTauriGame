@@ -20,11 +20,37 @@ pub fn webgl_start() -> Result<WebglStatus, String> {
         });
     }
 
+    //ресурсы относительно исполняемого файла
+    let exe_dir = std::env::current_exe()
+        .map_err(|e| format!("Failed to get executable path: {}", e))?
+        .parent()
+        .ok_or("Failed to get executable parent directory")?
+        .to_path_buf();
+
+    //несколько возможных расположений ресурсов
+    let possible_paths = [
+        exe_dir.join("resources").join("unity"),
+        exe_dir.join("../resources").join("unity"), // для режима разработки
+        exe_dir.join("../../resources").join("unity"), // альтернативный путь для разработки
+        std::env::current_dir().unwrap().join("src-tauri").join("resources").join("unity"), // путь для разработки
+    ];
+
+    let unity_dir = possible_paths
+        .iter()
+        .find(|path| path.exists())
+        .ok_or("Unity resources directory not found")?;
+
+    let script_path = unity_dir.join("serve_webgl.py");
+
+    if !script_path.exists() {
+        return Err(format!("Script file not found: {:?}", script_path));
+    }
+
     let child = Command::new("py")
-    .arg("F:\\Learning\\UnityTauriGame\\UnityTauriGame\\src-tauri\\resources\\unity\\serve_webgl.py")
-    .current_dir("F:\\Learning\\UnityTauriGame\\UnityTauriGame\\src-tauri\\resources\\unity")
-    .spawn()
-    .map_err(|e| format!("Failed to start server: {}", e))?;
+        .arg(&script_path)
+        .current_dir(unity_dir)
+        .spawn()
+        .map_err(|e| format!("Failed to start server: {}", e))?;
 
 
     *lock = Some(child);
