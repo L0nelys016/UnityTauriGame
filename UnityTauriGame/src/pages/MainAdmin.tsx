@@ -10,6 +10,11 @@ type Props = {
 };
 
 export default function MainAdmin(props: Props) {
+  const handleLaunch = (game: Game) => {
+    if (props.onGameLaunch) {
+      props.onGameLaunch(game);
+    }
+  };
   const viewModel = new MainAdminViewModel();
   const gameViewModel = new GameViewModel();
   const [genres, setGenres] = createSignal<Array<{ id: number; name: string }>>([]);
@@ -136,6 +141,24 @@ export default function MainAdmin(props: Props) {
                           <td>{game.total_ratings}</td>
                           <td>
                             <div class="admin-actions">
+                              <button
+                                class="btn-icon play"
+                                onClick={() => handleLaunch(game)}
+                                title="Запустить"
+                                style={{
+                                  background: "rgba(16, 185, 129, 0.1)",
+                                  color: "#10b981",
+                                  transition: "all 0.2s ease",
+                                }}
+                                onMouseEnter={(e) =>
+                                  (e.currentTarget.style.background = "rgba(16, 185, 129, 0.2)")
+                                }
+                                onMouseLeave={(e) =>
+                                  (e.currentTarget.style.background = "rgba(16, 185, 129, 0.1)")
+                                }
+                              >
+                                ▶️
+                              </button>
                               <button
                                 class="btn-icon edit"
                                 onClick={() => editGame(game.id)}

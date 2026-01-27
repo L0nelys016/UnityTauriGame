@@ -21,8 +21,8 @@ pub fn webgl_start() -> Result<WebglStatus, String> {
     }
 
     let child = Command::new("py")
-    .arg("A:\\Works\\UnityTauriGame\\UnityTauriGame\\src-tauri\\resources\\unity\\serve_webgl.py")
-    .current_dir("A:\\Works\\UnityTauriGame\\UnityTauriGame\\src-tauri\\resources\\unity")
+    .arg("F:\\Learning\\UnityTauriGame\\UnityTauriGame\\src-tauri\\resources\\unity\\serve_webgl.py")
+    .current_dir("F:\\Learning\\UnityTauriGame\\UnityTauriGame\\src-tauri\\resources\\unity")
     .spawn()
     .map_err(|e| format!("Failed to start server: {}", e))?;
 

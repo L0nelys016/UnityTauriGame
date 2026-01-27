@@ -1,6 +1,7 @@
 import { Show, createSignal } from "solid-js";
 import Auth from "./pages/Auth";
 import MainUser from "./pages/MainUser";
+import MainAdmin from "./pages/MainAdmin";
 import Navigation from "./components/Navigation";
 import { useAuth } from "./contexts/AuthContext";
 import { Game } from "./viewmodels/GameViewModel";
@@ -44,7 +45,7 @@ function App() {
       <main class="container">
         <Show when={!user()} fallback={
           <Show when={user()?.role === 1} fallback={<MainUser onGameLaunch={handleGameLaunch} />}>
-            <MainUser onGameLaunch={handleGameLaunch} />
+            <MainAdmin onGameLaunch={handleGameLaunch} />
           </Show>
         }>
           <Auth onLogin={handleLogin} />

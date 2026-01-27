@@ -83,6 +83,11 @@
 }
 .btn-icon:active { transform: translateY(1px) scale(0.95); }
 
+.admin-actions {
+  display: flex;
+  gap: 8px;
+}
+
 /* =========================================================
    3. Auth page
    ========================================================= */
@@ -234,6 +239,8 @@
   transition: transform 0.2s ease;
   font-size: 20px;
   line-height: 1;
+  background-color: transparent;
+  box-shadow: none;
 }
 
 .auth-password-toggle:hover .eye-icon {

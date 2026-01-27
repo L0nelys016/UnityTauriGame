@@ -80,16 +80,9 @@ export default function Auth({ onLogin }: AuthProps) {
                 tabIndex={-1}
                 title={showPassword() ? "Скрыть пароль" : "Показать пароль"}
               >
-                <span class="eye-icon">{showPassword() ? '👁️' : '👁️‍🗨️'}</span>
+                <span class="eye-icon">{showPassword() ? '👁️' : '⌣'}</span>
               </button>
             </div>
-          </div>
-
-          <div class="auth-remember-row">
-            <label class="auth-remember-label">
-              <input type="checkbox" class="auth-checkbox" />
-              <span>Запомнить пароль</span>
-            </label>
           </div>
 
           <button type="submit" class="btn btn-primary" disabled={loading()}>
