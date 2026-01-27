@@ -144,7 +144,7 @@ impl UserRepository for SQLiteUserRepository {
             .map_err(|e| format!("Failed to delete user: {}", e))?;
 
         if rows_affected == 0 {
-            return Err("User not found".to_string());
+            return Err("Пользователь не найден".to_string());
         }
         Ok(())
     }

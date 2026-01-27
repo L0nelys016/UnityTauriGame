@@ -4,10 +4,10 @@ pub struct Password(String);
 impl Password {
     pub fn new(value: String) -> Result<Self, String> {
         if value.is_empty() {
-            return Err("Password cannot be empty".to_string());
+            return Err("Пароль не может быть пустым".to_string());
         }
-        if value.len() < 6 {
-            return Err("Password must be at least 6 characters".to_string());
+        if value.len() < 4 {
+            return Err("Пароль должен содержать минимум 4 символа".to_string());
         }
         Ok(Password(value))
     }

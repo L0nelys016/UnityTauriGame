@@ -18,7 +18,7 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self' http://127.0.0.1:* blob: data: filesystem: ws: wss:;"
     }
   },
   "bundle": {

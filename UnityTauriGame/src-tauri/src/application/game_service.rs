@@ -27,6 +27,28 @@ impl GameService {
         Ok(game)
     }
 
+    pub fn update_game(
+        &self,
+        id: i64,
+        title: String,
+        description: Option<String>,
+        genre_id: i64,
+        release_date: String,
+    ) -> Result<Game, String> {
+        // Проверка: существует ли игра
+        let existing = self.repository.find_by_id(id)?;
+        if existing.is_none() {
+            return Err("Игра не найдена".to_string());
+        }
+
+        let game_title = GameTitle::new(title)?;
+        let game = Game::new(id, game_title, description, genre_id, release_date)?;
+
+        self.repository.update(&game)?;
+
+        Ok(game)
+    }
+
     pub fn get_game(&self, id: i64) -> Result<Option<Game>, String> {
         self.repository.find_by_id(id)
     }

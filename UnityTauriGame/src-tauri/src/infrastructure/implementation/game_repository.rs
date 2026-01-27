@@ -40,6 +40,37 @@ impl GameRepository for SQLiteGameRepository {
         Ok(())
     }
 
+    fn update(&self, game: &Game) -> Result<(), String> {
+        let conn = self
+            .connection
+            .lock()
+            .map_err(|_| "Database connection poisoned".to_string())?;
+
+        let rows_affected = conn
+            .execute(
+                "UPDATE games
+                SET title = ?,
+                    description = ?,
+                    genre_id = ?,
+                    release_date = ?
+                WHERE id = ?",
+                rusqlite::params![
+                    game.title().as_str(),
+                    game.description(),
+                    game.genre_id(),
+                    game.release_date(),
+                    game.id(),
+                ],
+            )
+            .map_err(|e| format!("Failed to update game: {}", e))?;
+
+        if rows_affected == 0 {
+            return Err("Игра не найдена".to_string());
+        }
+
+        Ok(())
+    }
+
     fn find_by_id(&self, id: i64) -> Result<Option<Game>, String> {
         let conn = self
             .connection
@@ -244,7 +275,7 @@ impl GameRepository for SQLiteGameRepository {
             .map_err(|e| format!("Failed to delete game: {}", e))?;
 
         if rows_affected == 0 {
-            return Err("Game not found".to_string());
+            return Err("Игра не найдена".to_string());
         }
         Ok(())
     }

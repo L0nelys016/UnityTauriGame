@@ -2,6 +2,7 @@ use crate::domain::models::{Game, GameTitle};
 
 pub trait GameRepository: Send + Sync {
     fn save(&self, game: &Game) -> Result<(), String>;
+    fn update(&self, game: &Game) -> Result<(), String>;
     fn find_by_id(&self, id: i64) -> Result<Option<Game>, String>;
     fn find_by_title(&self, title: &GameTitle) -> Result<Option<Game>, String>;
     fn find_all(&self) -> Result<Vec<Game>, String>;

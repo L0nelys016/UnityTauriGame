@@ -115,10 +115,10 @@ impl GenreRepository for SQLiteGenreRepository {
 
         let rows_affected = conn
             .execute("DELETE FROM genres WHERE id = ?", rusqlite::params![id])
-            .map_err(|e| format!("Failed to delete genre: {}", e))?;
+            .map_err(|e| format!("Не удалось удалить жанр: {}", e))?;
 
         if rows_affected == 0 {
-            return Err("Genre not found".to_string());
+            return Err("Жанр не найден".to_string());
         }
         Ok(())
     }

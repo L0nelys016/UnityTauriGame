@@ -4,13 +4,13 @@ pub struct GameTitle(String);
 impl GameTitle {
     pub fn new(value: String) -> Result<Self, String> {
         if value.is_empty() {
-            return Err("Game title cannot be empty".to_string());
+            return Err("Название игры не может быть пустым".to_string());
         }
         if value.len() < 2 {
-            return Err("Game title must be at least 2 characters".to_string());
+            return Err("Название игры должно содержать минимум 2 символа".to_string());
         }
         if value.len() > 100 {
-            return Err("Game title must not exceed 100 characters".to_string());
+            return Err("Название игры не должно превышать 100 символов".to_string());
         }
         Ok(GameTitle(value))
     }

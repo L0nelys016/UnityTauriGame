@@ -1,173 +1,194 @@
-import { createSignal, For, Show } from "solid-js";
+import { createSignal, For, Show, onMount } from "solid-js";
 import Rating from "./Rating";
 import "./Pages.css";
+import { MainUserViewModel } from "../viewmodels/MainUserViewModel";
+import { Game } from "../viewmodels/GameViewModel";
+import { useAuth } from "../contexts/AuthContext";
+import { useNotifications } from "../services/NotificationService";
+import { webglApi, type WebglStatus } from "../webgl.api";
 
-// Тип данных игры
-type Game = {
-  id: number;
-  title: string;
-  genre: string;
-  developer: string;
-  rating: number; // средний рейтинг
+type Props = {
+  onGameLaunch?: (game: Game) => void;
 };
 
-export default function UserPage() {
-  const [games, setGames] = createSignal<Game[]>([
-    { id: 1, title: "The Witcher 3", genre: "RPG", developer: "CD Projekt Red", rating: 4.5 },
-    { id: 2, title: "Cyberpunk 2077", genre: "RPG", developer: "CD Projekt Red", rating: 4.2 },
-    { id: 3, title: "Forza Horizon 5", genre: "Racing", developer: "Playground Games", rating: 4.7 },
-    { id: 4, title: "Age of Empires IV", genre: "Strategy", developer: "Relic Entertainment", rating: 4.0 },
-  ]);
-
-  const [search, setSearch] = createSignal("");
-  const [filterGenre, setFilterGenre] = createSignal("");
-  const [sortKey, setSortKey] = createSignal<"title" | "genre" | "rating">("title");
-
+export default function UserPage(props: Props) {
+  const viewModel = new MainUserViewModel();
   const [selectedGame, setSelectedGame] = createSignal<Game | null>(null);
   const [showRating, setShowRating] = createSignal(false);
+  const { user } = useAuth();
+  const { success, error: showError } = useNotifications();
 
-  // Фильтрация и сортировка
-  const filteredGames = () => {
-    return games()
-      .filter(g => g.title.toLowerCase().includes(search().toLowerCase()) &&
-                   (!filterGenre() || g.genre === filterGenre()))
-      .sort((a, b) => {
-        if (sortKey() === "rating") return b.rating - a.rating;
-        const valA = String(a[sortKey()]);
-        const valB = String(b[sortKey()]);
-        return valA.localeCompare(valB);
-      });
-  };
+  const [launchGame, setLaunchGame] = createSignal<Game | null>(null);
+  const [webglUrl, setWebglUrl] = createSignal<string>("");
+  const [isGameBusy, setIsGameBusy] = createSignal(false);
+  const [gameError, setGameError] = createSignal<string | null>(null);
+
+  onMount(async () => {
+    try {
+      await viewModel.loadGames();
+      await viewModel.loadGenres();
+    } catch (err) {
+      showError("Не удалось загрузить данные");
+    }
+  });
 
   const handleRate = (game: Game) => {
     setSelectedGame(game);
     setShowRating(true);
   };
 
-  const handleRatingSave = (rating: number) => {
-    setGames(prev => prev.map(g => g.id === selectedGame()!.id ? { ...g, rating } : g));
-    setShowRating(false);
+  const handleRatingSave = async () => {
+    if (selectedGame()) {
+      try {
+        await viewModel.refreshGames();
+        success("Оценка успешно сохранена");
+        setShowRating(false);
+      } catch {
+        showError("Не удалось обновить данные");
+      }
+    }
   };
 
-  const handleRatingSkip = () => {
-    setShowRating(false);
-  };
+  const handleRatingSkip = () => setShowRating(false);
 
   const handleLaunch = (game: Game) => {
-    alert(`Запуск игры: ${game.title}`);
+    setIsGameBusy(true);
+    setGameError(null);
+    try {
+      if (props.onGameLaunch) {
+        props.onGameLaunch(game);
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setGameError(msg);
+    } finally {
+      setIsGameBusy(false);
+    }
   };
 
   return (
-    <div class="auth-root" style={{ "flex-direction": "column", gap: "24px" }}>
-      <h1>Каталог игр</h1>
+    <div class="user-page">
+      <div class="auth-background" />
 
       {/* Фильтры */}
-      <div style={{ display: "flex", gap: "12px", "align-items": "center" }}>
+      <div class="filters-container">
         <input
-          placeholder="Поиск..."
-          value={search()}
-          onInput={e => setSearch(e.currentTarget.value)}
-          class="auth-input"
+          placeholder="🔍 Поиск по названию..."
+          value={viewModel.getSearch()}
+          onInput={(e) => viewModel.setSearchValue(e.currentTarget.value)}
+          class="filter-input"
         />
         <select
-          value={filterGenre()}
-          onChange={e => setFilterGenre(e.currentTarget.value)}
-          class="auth-input"
+          value={viewModel.getFilterGenre() || ""}
+          onChange={(e) =>
+            viewModel.setFilterGenreValue(
+              e.currentTarget.value ? parseInt(e.currentTarget.value) : null
+            )
+          }
+          class="filter-select"
         >
           <option value="">Все жанры</option>
-          <option value="RPG">RPG</option>
-          <option value="Strategy">Strategy</option>
-          <option value="Racing">Racing</option>
+          <For each={viewModel.getGenres()}>
+            {(genre) => <option value={genre.id}>{genre.name}</option>}
+          </For>
         </select>
         <select
-          value={sortKey()}
-          onChange={e => setSortKey(e.currentTarget.value as any)}
-          class="auth-input"
+          value={viewModel.getSortKey()}
+          onChange={(e) =>
+            viewModel.setSortKeyValue(e.currentTarget.value as any)
+          }
+          class="filter-select"
         >
-          <option value="title">Сортировка по названию</option>
-          <option value="genre">Сортировка по жанру</option>
-          <option value="rating">Сортировка по рейтингу</option>
+          <option value="title">📝 По названию</option>
+          <option value="genre">🎭 По жанру</option>
+          <option value="rating">⭐ По рейтингу</option>
         </select>
       </div>
 
       {/* Сетка карточек */}
-      <div class="user-grid" style={{
-        display: "grid",
-        "grid-template-columns": "repeat(auto-fit, minmax(260px, 1fr))",
-        gap: "16px",
-        width: "100%"
-      }}>
-        <For each={filteredGames()}>
-          {game => (
-            <div class="admin-card" style={{
-              padding: "20px",
-              "text-align": "left",
-              "display": "flex",
-              "flex-direction": "column",
-              "justify-content": "space-between",
-              "min-width": "260px"
-            }}>
-              <h3 style={{
-                margin: "0 0 8px",
-                color: "#0f172a",
-                "font-weight": "700",
-                "font-size": "18px"
-              }}>
-                {game.title}
-              </h3>
-
-              <p style={{ margin: "4px 0", color: "#475569" }}>Жанр: {game.genre}</p>
-              <p style={{ margin: "4px 0", color: "#475569" }}>Разработчик: {game.developer}</p>
-
-              <p
-                class="rating"
-                style="margin: 8px 0; display: flex; align-items: center; gap: 4px; font-size: 24px;"
-              >
-                {Array.from({ length: 5 }, (_, i) => i + 1).map(i => (
-                  <span style={`color: ${i <= Math.round(game.rating) ? "#f59e0b" : "#e2e8f0"};`}>
-                    ★
-                  </span>
-                ))}
-                <span style="margin-left: 6px; color: #64748b; font-size: 14px;">
-                  ({game.rating.toFixed(1)})
-                </span>
-              </p>
-
-
-              <div style={{
-                display: "flex",
-                "justify-content": "space-between",
-                gap: "12px",
-                "margin-top": "12px"
-              }}>
-                <button
-                  class="btn btn-primary"
-                  style={{ flex: 1 }}
-                  onClick={() => handleLaunch(game)}
-                >
-                  Запустить игру
-                </button>
-                <button
-                  class="btn-icon"
-                  style={{ padding: "0 12px", "font-size": "20px", color: "#f59e0b" }}
-                  onClick={() => handleRate(game)}
-                >
-                  ⭐
-                </button>
-              </div>
+      {viewModel.getLoading() ? (
+        <div class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>Загрузка игр...</p>
+        </div>
+      ) : (
+        <Show
+          when={viewModel.getFilteredGames().length > 0}
+          fallback={
+            <div class="empty-state">
+              <div class="empty-state-icon">🎮</div>
+              <h3>Игры не найдены</h3>
+              <p>Попробуйте изменить параметры поиска или фильтры</p>
             </div>
-          )}
-        </For>
-      </div>
+          }
+        >
+          <div class="user-grid">
+            <For each={viewModel.getFilteredGames()}>
+              {(game) => (
+                <div class="game-card">
+                  <div class="game-card-header">
+                    <h3 class="game-title">{game.title}</h3>
+                  </div>
+                  <div class="game-card-body">
+                    <div class="game-info">
+                      <span class="game-info-item">
+                        🎭 {viewModel.getGenreName(game.genre_id)}
+                      </span>
+                      <span class="game-info-item">📅 {game.release_date}</span>
+                    </div>
+                    <div class="game-rating">
+                      <div class="stars">
+                        {Array.from({ length: 5 }, (_, i) => i + 1).map((i) => (
+                          <span
+                            class={`star ${
+                              i <= Math.round(game.average_rating) ? "filled" : ""
+                            }`}
+                          >
+                            ★
+                          </span>
+                        ))}
+                      </div>
+                      <span class="rating-value">
+                        {game.average_rating.toFixed(1)} (
+                        {game.total_ratings} оценок)
+                      </span>
+                    </div>
+                  </div>
+                  <div class="game-card-actions">
+                    <button
+                      class="btn btn-primary"
+                      onClick={() => handleLaunch(game)}
+                      disabled={isGameBusy()}
+                    >
+                      {isGameBusy() ? "Запуск..." : "🎮 Запустить"}
+                    </button>
+                    <button
+                      class="btn btn-rating"
+                      onClick={() => handleRate(game)}
+                      title="Оценить игру"
+                    >
+                      ⭐
+                    </button>
+                  </div>
+                </div>
+              )}
+            </For>
+          </div>
+        </Show>
+      )}
 
       {/* Оверлей для оценки */}
-      <Show when={showRating()}>
+      <Show when={showRating() && selectedGame()}>
         <Rating
+          gameId={selectedGame()!.id}
+          userId={user()?.id || 0}
           gameTitle={selectedGame()?.title}
           onSave={handleRatingSave}
           onSkip={handleRatingSkip}
         />
       </Show>
+
+      {/* Оверлей для WebGL теперь находится в App.tsx */}
     </div>
   );
 }
