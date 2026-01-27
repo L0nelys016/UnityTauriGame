@@ -18,7 +18,18 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self' http://127.0.0.1:* blob: data: filesystem: ws: wss:;"
+      "csp": {
+        "default-src": "'self' 'unsafe-inline' blob: data: filesystem: tauri: http://localhost:*",
+        "script-src": "'self' 'unsafe-eval' 'unsafe-inline' blob: data: filesystem: tauri:",
+        "style-src": "'self' 'unsafe-inline' http://localhost:*",
+        "img-src": "'self' data: blob: http://localhost:*",
+        "connect-src": "'self' blob: data: http://localhost:*",
+        "font-src": "'self' data: http://localhost:*",
+        "frame-src": "'self' http://localhost:*",
+        "child-src": "'self' http://localhost:*",
+        "worker-src": "'self' blob: http://localhost:*",
+        "media-src": "'self' blob: http://localhost:*"
+      }
     }
   },
   "bundle": {

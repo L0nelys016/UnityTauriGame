@@ -57,6 +57,12 @@ class UnityWebGLRequestHandler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self) -> None:
         # Commonly useful for local testing.
         self.send_header("Cache-Control", "no-cache")
+        # Add CORS headers for Unity WebGL
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "*")
+        # Additional headers for Unity WebGL compatibility
+        self.send_header("X-Content-Type-Options", "nosniff")
         super().end_headers()
 
     def guess_type(self, path: str) -> str:
