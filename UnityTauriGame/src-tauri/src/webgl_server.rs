@@ -4,6 +4,22 @@ use once_cell::sync::Lazy;
 
 pub static WEBGL_SERVER: Lazy<Mutex<Option<Child>>> = Lazy::new(|| Mutex::new(None));
 
+fn find_python_command() -> Result<String, String> {
+    let commands = ["python3", "python", "py"];
+    
+    for cmd in &commands {
+        let result = Command::new(cmd)
+            .arg("--version")
+            .output();
+        
+        if result.is_ok() {
+            return Ok(cmd.to_string());
+        }
+    }
+    
+    Err("No Python interpreter found (tried: python3, python, py)".to_string())
+}
+
 #[derive(Default)]
 pub struct WebglServerState;
 
@@ -46,7 +62,8 @@ pub fn webgl_start() -> Result<WebglStatus, String> {
         return Err(format!("Script file not found: {:?}", script_path));
     }
 
-    let child = Command::new("py")
+    let python_cmd = find_python_command()?;
+    let child = Command::new(python_cmd)
         .arg(&script_path)
         .current_dir(unity_dir)
         .spawn()
