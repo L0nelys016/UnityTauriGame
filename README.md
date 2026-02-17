@@ -137,6 +137,7 @@ npm run tauri build
 
 👤 Авторы
 L0nelys016 — Initial work
+
 GitHub: [https://github.com/L0nelys016](https://github.com/L0nelys016)
 
 Репозиторий проекта:
